@@ -58,7 +58,6 @@ The most important settings in `config.json` are:
 
 On my system (**Intel Core i5-13420H**, 8 cores / 12 threads @ 2.1–4.6 GHz), the program typically uses **~0–0.6% CPU** while running with the default settings (`ocr_scale = 8`, `update_interval = 4`) at **1080p resolution**.  
 
-This shows the program is **very lightweight** and not CPU heavy.  
 Performance may vary on lower-end CPUs or at higher resolutions (1440p / 4K), where OCR has to process more pixels.
 
 If you experience higher CPU usage, try:  
