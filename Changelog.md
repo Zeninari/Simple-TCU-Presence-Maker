@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.9
+## v0.9.0
 - You no longer have to install Tesseract manually due to a bug.
 - Fixed F9: now reloads everything properly, including the mains.
 
