@@ -1,9 +1,6 @@
 # TCU Status Presence Maker
 
-⚠️ **IMPORTANT:**  This application bundles Tesseract OCR, which is licensed under Apache License 2.0.  
-The original LICENSE file is included in this distribution. 
-
-The program does not interact with the game directly, it only reads your screen to determine your location. 
+⚠️ **IMPORTANT:** The program does not interact with the game directly, it only reads your screen to determine your location. 
 **REQUIRES THE OG HUD TO FUNCTION**
 
 ## Overview
@@ -96,3 +93,21 @@ The program uses a `config.json` file. You can adjust:
 - Only necessary tessdata files for selected languages are included to reduce size.  
 - Make sure `config.json`, and `Language/` folder are in the same directory
 - If running from source, also make sure the `Tesseract-OCR` folder is in the same directory
+
+---
+
+## License
+
+This project bundles **Tesseract OCR**, which is licensed under **Apache License 2.0**.  
+The original `LICENSE` file for Tesseract is included in the `Tesseract-OCR/doc/` folder.
+
+The remainder of this project is Also licensed Under **Apache License 2.0**
+
+---
+
+## Community Links
+
+- [Join the TCU Discord Server](https://discord.gg/tcu)  
+- [Check the TCU YouTube Channel](https://youtube.com/@whammy4)
+
+
