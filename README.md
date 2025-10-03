@@ -74,8 +74,15 @@ The program uses a `config.json` file. You can adjust:
 ---
 
 ## Compiling From Source
-To compile the `.exe` from source you need the following command (ensure **pyinstaller** is installed):
-
+To compile the `.exe` from source you need the following commands:
+```bash
+pip install pyinstaller
+```
+to test it installed correctly, run the following command:
+```bash
+pyinstaller --version
+```
+then run this command to compile from the source:
 ```bash
 pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "config.json;." --add-data "Language;Language" --add-data "Capture;Capture" --add-data "Tesseract-OCR;Tesseract-OCR" TcuStatus.py
 ```
