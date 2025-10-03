@@ -1,12 +1,10 @@
 # TCU Status Presence Maker
 
-**NOTICE:** This application bundles Tesseract OCR, which is licensed under Apache License 2.0.  
-The original LICENSE file is included in this distribution.
+⚠️ **IMPORTANT:**  This application bundles Tesseract OCR, which is licensed under Apache License 2.0.  
+The original LICENSE file is included in this distribution. The program does not interact with the game directly, it only reads your screen to determine your location.
 
 ## Overview
 This tool displays your current in-game map location from **The Crew Unlimited** as a Discord Rich Presence status.
-
-⚠️ **IMPORTANT:** The program does not interact with the game directly—it only reads your screen to determine your location.
 
 ---
 
