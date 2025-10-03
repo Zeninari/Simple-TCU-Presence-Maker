@@ -24,4 +24,4 @@
 
 ---
 
-**Note:** there are versions from before now, but i did not start logging them until version v0.9
+**Note:** there are versions from before v0.9, but i did not start logging changes until version v0.9
