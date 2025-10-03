@@ -29,6 +29,23 @@ Then run:
 python TcuStatus.py
 ```
 
+### Option 3: Compiling From Source
+To compile the `.exe` from source you need the following commands:
+```bash
+pip install pyinstaller
+```
+
+to test it installed correctly, run the following command:
+```bash
+pyinstaller --version
+```
+
+then run this command to compile from the source:
+```bash
+pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "Tesseract-OCR;Tesseract-OCR" TcuStatus.py
+```
+
+
 ---
 
 ## Terminal Hotkeys
@@ -70,22 +87,6 @@ The program uses a `config.json` file. You can adjust:
 - PT - Portuguese  
 - DA - Danish  
 - NL - Dutch  
-
----
-
-## Compiling From Source
-To compile the `.exe` from source you need the following commands:
-```bash
-pip install pyinstaller
-```
-to test it installed correctly, run the following command:
-```bash
-pyinstaller --version
-```
-then run this command to compile from the source:
-```bash
-pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "Tesseract-OCR;Tesseract-OCR" TcuStatus.py
-```
 
 ---
 
