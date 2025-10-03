@@ -1,6 +1,7 @@
 # TCU Status Presence Maker – User Guide
 
-⚠️ **IMPORTANT:** You need to create your own Discord bot and enter its details in the `config.json` file before running this program.
+⚠️ **IMPORTANT:** You need to create your own Discord bot and enter its details in the `config.json` file before running this program.  
+**NOTE:** The script requires the OG HUD to function — it will not work otherwise.
 
 ---
 
@@ -23,7 +24,7 @@ The most important settings in `config.json` are:
 - Controls how often (in seconds) the OCR runs.
 
 **Drawbacks:**
-- Too low (1–2s): High CPU usage, may cause stuttering.
+- Too low (1–2s): Higher CPU usage, may cause unnecessary stuttering.
 - Too high (8–10s): Discord status lags behind your in-game position.
 
 ---
@@ -34,7 +35,7 @@ The most important settings in `config.json` are:
 
 **Drawbacks:**
 - Too low (2–4): Poor OCR accuracy, more misreads.
-- Too high (12+): Very CPU-heavy, updates slower.
+- Too high (12+): More CPU usage and slightly slower updates.
 
 ---
 
@@ -48,9 +49,21 @@ The most important settings in `config.json` are:
 |-----------------|------------------------|-----------------------------|-------|
 | **1080p (1920×1080)** | `6–8`  | `3–5` | Default config is tuned for this resolution. |
 | **1440p (2560×1440)** | `8–10` | `4–6` | Slightly higher scale improves recognition. |
-| **4K (3840×2160)**   | `10–12` | `5–7` | Large scale needed; longer interval helps reduce CPU load. |
+| **4K (3840×2160)**   | `10–12` | `5–7` | Larger scale needed; longer interval helps reduce CPU load. |
 | **Ultrawide (3440×1440 / 5120×1440)** | `9–11` | `5–7` | Similar to 1440p/4K but may need tweaking. |
 
+---
+
+## Performance Notes
+
+On my system (**Intel Core i5-13420H**, 8 cores / 12 threads @ 2.1–4.6 GHz), the program typically uses **~0.5–0.8% CPU** while running with the default settings (`ocr_scale = 8`, `update_interval = 4`) at **1080p resolution**.  
+
+This shows the program is **very lightweight** and not CPU heavy.  
+Performance may vary on lower-end CPUs or at higher resolutions (1440p / 4K), where OCR has to process more pixels.
+
+If you experience higher CPU usage, try:  
+- Increasing `update_interval` slightly (e.g., from `4` → `6`) to reduce OCR checks per second.  
+- Lowering `ocr_scale` if recognition is already accurate enough.
 
 ---
 
