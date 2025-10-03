@@ -22,6 +22,11 @@
 - Made the OCR more reliable by default.
 - Fixed the F9 toggle not having a fail exception.
 
+## v0.9.7
+- Made The Transitional Overrides More Accurate
+- Added A Better Discord Update Check (To Avoid Updates When They Arent Needed)
+- Fixed Another Compile Eroror
+
 ---
 
 **Note:** there are versions from before v0.9, but i did not start logging changes until version v0.9
