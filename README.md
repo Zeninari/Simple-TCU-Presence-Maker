@@ -1,7 +1,9 @@
 # TCU Status Presence Maker
 
 ⚠️ **IMPORTANT:**  This application bundles Tesseract OCR, which is licensed under Apache License 2.0.  
-The original LICENSE file is included in this distribution. The program does not interact with the game directly, it only reads your screen to determine your location. 
+The original LICENSE file is included in this distribution. 
+
+The program does not interact with the game directly, it only reads your screen to determine your location. 
 **REQUIRES THE OG HUD TO FUNCTION**
 
 ## Overview
