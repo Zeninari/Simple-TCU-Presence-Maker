@@ -1,7 +1,7 @@
 # TCU Status Presence Maker
 
 ⚠️ **IMPORTANT:** The program does not interact with the game directly, it only reads your screen to determine your location. 
-**REQUIRES THE OG HUD TO FUNCTION**
+**THE SCRIPT REQUIRES THE OG HUD TO FUNCTION, IT WILL NOT WORK OTHERWISE**
 
 ## Overview
 This tool displays your current in-game map location from **The Crew Unlimited** as a Discord Rich Presence status.
@@ -90,8 +90,9 @@ The program uses a `config.json` file. You can adjust:
 ## Notes
 - Again focus the terminal before using hotkeys.  
 - OCR relies on your screen resolution and map location; use **F10** to redefine the OCR if needed.  
-- Only necessary tessdata files for selected languages are included to reduce size.  
-- Make sure `config.json`, and `Language/` folder are in the same directory
+- Only necessary tessdata files for selected languages are included to reduce size. 
+- You can also compile your own version of the bot using a custom Tesseract-OCR folder if desired.
+- Make sure config.json and Language/ folder are in the same directory as the executable
 - If running from source, also make sure the `Tesseract-OCR` folder is in the same directory
 
 ---
@@ -101,7 +102,7 @@ The program uses a `config.json` file. You can adjust:
 This project bundles **Tesseract OCR**, which is licensed under **Apache License 2.0**.  
 The original `LICENSE` file for Tesseract is included in the `Tesseract-OCR/doc/` folder.
 
-The remainder of this project is Also licensed Under **Apache License 2.0**
+The remainder of this project is also licensed under **Apache License 2.0**
 
 ---
 
