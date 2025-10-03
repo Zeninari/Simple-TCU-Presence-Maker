@@ -84,7 +84,7 @@ pyinstaller --version
 ```
 then run this command to compile from the source:
 ```bash
-pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "config.json;." --add-data "Language;Language" --add-data "Capture;Capture" --add-data "Tesseract-OCR;Tesseract-OCR" TcuStatus.py
+pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "Tesseract-OCR;Tesseract-OCR" TcuStatus.py
 ```
 
 ---
