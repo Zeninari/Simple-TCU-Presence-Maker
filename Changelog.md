@@ -23,9 +23,14 @@
 - Fixed the F9 toggle not having a fail exception.
 
 ## v0.9.7
-- Made The Transitional Overrides More Accurate
-- Added A Better Discord Update Check (To Avoid Updates When They Arent Needed)
-- Fixed Another Compile Eroror
+- Made the transitional overrides more accurate
+- Added A better discord update check (To avoid updates when they arent needed)
+- Fixed another compile error
+
+## v0.9.8
+- Fixed the script being hard to read, cleaned up code, etc
+- Fixed F11 not capturing & saving correctly
+- Fixed and made it more obvious when verbrose logging was enabled 
 
 ---
 
