@@ -37,6 +37,9 @@
 - Fixed console logging showing duplicates (unless verbrose logging is enabled)
 - Made the transitional override more robust for more edge cases
 - Fixed the fact i missed a ton of locations throughout the entire map (seriously its confusing)
+- Added F6 (Toggle Area Time)
+- Added F7 (Toggle Images Based On Area)
+- Added F8 Key (Toggle Verbrose)
 
 ---
 
