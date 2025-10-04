@@ -40,6 +40,7 @@
 - Added F6 (Toggle Area Time)
 - Added F7 (Toggle Images Based On Area)
 - Added F8 Key (Toggle Verbrose)
+- Fixed a bug i introduced with how the language file is loaded
 
 ---
 
