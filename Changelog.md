@@ -32,6 +32,12 @@
 - Fixed F11 not capturing & saving correctly
 - Fixed and made it more obvious when verbrose logging was enabled 
 
+## v0.9.9
+- Fixed pushing unneciary discord updates
+- Fixed console logging showing duplicates (unless verbrose logging is enabled)
+- Made the transitional override more robust for more edge cases
+- Fixed the fact i missed a ton of locations throughout the entire map (seriously its confusing)
+
 ---
 
 **Note:** there are versions from before v0.9, but i did not start logging changes until version v0.9
