@@ -44,6 +44,7 @@
 - Fixed F6 (Typo)
 - Fixed F11 & made it more human readable
 - Fixed the grandcanyon not having its own area (seriously why is the areas in this game so weird)
+- Added Polish (mainly for my 2 polish testers)
 
 ---
 
