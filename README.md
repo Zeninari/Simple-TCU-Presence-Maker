@@ -158,7 +158,8 @@ Some settings can also be toggled in real-time using F-keys (press the key while
 
 ## Notes
 - Again focus the terminal before using hotkeys.  
-- OCR relies on your screen resolution and map location; use **F10** to redefine the OCR if needed.  
+- OCR relies on your screen resolution and map location; use **F10** to redefine the OCR if needed.
+- When screenshotting an OCR region, make sure to **ONLY** include the sub region.
 - Only necessary tessdata files for selected languages are included to reduce size. 
 - You can also compile your own version of the bot using a custom Tesseract-OCR folder if desired.
 - Make sure config.json and Language/ folder are in the same directory as the executable
