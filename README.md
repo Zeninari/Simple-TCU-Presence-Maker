@@ -100,16 +100,38 @@ pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "Tesseract-OCR;Te
 ---
 
 ## Configuration
-The program uses a `config.json` file. You can adjust:
 
-- **DISCORD_CLIENT_ID** – Your Discord app ID (required)  
-- **update_interval** – How frequently OCR updates, in seconds  
-- **ocr_scale** – Scaling factor for OCR accuracy  
-- **current_language** – ISO language code for OCR  
-- **language_path** – Path to JSON language files  
-- **smart_fallback** – Use fallback detection when map OCR is ambiguous  
-- **verbose_logging** – Enables extra console logging  
-- **Discord presence images & buttons**: `large_image`, `large_text`, `small_image`, `small_text`, `button1_label`, `button1_url`, etc.  
+The program uses a `config.json` file to control settings. You can adjust the following options:
+
+### Discord Bot
+- **DISCORD_CLIENT_ID** – Your Discord application’s **Client ID** (required).  
+- **large_image** – Default large image key for Discord Rich Presence.  
+- **large_text** – Tooltip text for the large image.  
+- **small_image** – Small image key for Discord Rich Presence.  
+- **small_text** – Tooltip text for the small image.  
+- **button1_label / button1_url** – Label and URL for the first Rich Presence button.  
+- **button2_label / button2_url** – Label and URL for the second button.
+
+### OCR / Map Detection
+- **update_interval** – How often the OCR reads the map, in seconds.  
+- **ocr_scale** – Scaling factor for OCR accuracy (higher = more precise).  
+- **current_language** – ISO language code for OCR (e.g., `EN`, `PL`).  
+- **ocr_region** – `[x, y, width, height]` of the screen region the OCR reads.  
+- **smart_fallback** – Enables fallback detection when the OCR result is ambiguous.  
+- **time_in_area** – If `true`, the bot tracks how long you remain in each area.  
+- **dynamic_large_image** – If `true`, changes the large image based on the current main area.  
+- **verbose_logging** – Enables detailed console logging for debugging.
+
+### Hotkeys
+Some settings can also be toggled in real-time using F-keys (press the key while the terminal is focused):
+
+- **F6** – Toggle "Time Spent in Current Area" (`time_in_area`).  
+- **F7** – Toggle dynamic large images (`dynamic_large_image`).  
+- **F8** – Toggle verbose logging (`verbose_logging`).  
+- **F9** – Reload language files for OCR (debug).  
+- **F10** – Redefine the OCR region dynamically.  
+- **F11** – Save a screenshot of the current OCR region.  
+- **F12** – Exit the bot.
 
 ---
 
