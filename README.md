@@ -37,6 +37,21 @@ The program reads your in-game location from the screen and updates your Discord
 
 ## How To Run This Program
 
+### Step 1: Configure Your Discord Bot
+Before running the program, you need to create your **own Discord application** and bot:
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new application.  
+2. Add a bot to the application and copy its **Client ID**.  
+3. Open `config.json` in the program folder and enter your Discord **Client ID** under `DISCORD_CLIENT_ID`.  
+4. If you want **rich presence images**, upload the provided images from the `Images/` folder to your Discord application under the **Rich Presence → Art Assets** section. The Names are exactly as they are listed in `config.json` (`large_image`, `small_image`, etc.) so the bot can use them automatically.
+
+### Step 2: If you prefer to use your own images for the `large_image`, you have two options:
+
+1. For a **static image**, upload it under any name and copy that name into `large_image` in `config.json`.  
+2. For a **dynamic large area image**, upload it with the same name as in the folder. For example, upload `midwest` for the Midwest region (this will persist regardless of language).
+
+---
+
 ### Option 1: Run the Executable
 Simply launch **TCUStatus.exe**. No additional dependencies are required.
 
