@@ -31,7 +31,7 @@ The program reads your in-game location from the screen and updates your Discord
 
 ### 5. **Misreads & Safety:**  
    - Some unusual OCR outputs might still appear temporarily, but the bot is designed to minimize false updates.  
-   - If you notice its not reading/updating or is having persistent misreads, you can **redefine the OCR region** using `**F10**`.
+   - If you notice its not reading/updating or is having persistent misreads, you can **redefine the OCR region** using **`*10`**.
 
 ---
 
