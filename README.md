@@ -22,7 +22,7 @@ The program reads your in-game location from the screen and updates your Discord
    - This ensures minor OCR errors don’t trigger completely wrong updates.
 
 ### 3. **Transition Rules:**  
-   - Certain area transitions have **special rules** (such as moving to a city from it's surrounding region, entering an area that appears in multiple locations). The bot manages these automatically.
+   - Certain area transitions have **special rules** (such as moving to a city from it's surrounding region; entering an area that appears in multiple locations). The bot manages these automatically.
 
 ### 4. **Discord Updates:**  
    - The bot only updates Discord when the confirmed location changes.  
