@@ -47,6 +47,9 @@
 - Added Polish (mainly for my 2 polish testers)
 - Fixed F12 Triggering Screenshot On Close (For Steam Users)
 - Fixed F7 Not Repecting The Current Language
+- Fixed Discord Getting Unneded Updates
+- Fixed Verbrose Logging Not Logging All Changes, Even If Discord Wasn't Updated
+- Fixed The OCR Check To Be More Consistant
 
 ---
 
