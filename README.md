@@ -2,7 +2,7 @@
 
 > ⚠️ **Important:** This program does **not** interact with the game directly. It reads your screen to determine your location.  
 > **The script requires the original HUD to function and will not work otherwise.**
-> **Running in Boarderless is recomended, but you can run in fullscreen as long as it matches your desktop resolution**
+> **Running in Boarderless is recomended, but you can run in fullscreen as long as it matches your desktop resolution.**
 > **OCR will break if your setting the region in a resolution that your monitor doesn't support.**
 
 ---
