@@ -152,7 +152,7 @@ The remainder of this project is also licensed under **Apache License 2.0**
 
 ## Community Links
 
-- [Join the TCU Discord Server](https://discord.gg/tcu)  
-- [Check the TCU YouTube Channel](https://youtube.com/@whammy4)
+- [Join the TCU Discord Server!](https://discord.gg/tcu)  
+- [Check the official TCU YouTube Channel!](https://youtube.com/@whammy4)
 
 
