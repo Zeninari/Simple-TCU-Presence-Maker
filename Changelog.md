@@ -29,7 +29,7 @@
 
 ## v0.9.8
 - Fixed the script being hard to read, cleaned up code, etc
-- Fixed F11 not capturing & saving correctly
+- Fixed `F11` not capturing & saving correctly
 - Fixed and made it more obvious when verbrose logging was enabled 
 
 ## v0.9.9
