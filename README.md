@@ -12,24 +12,24 @@ This tool displays your current in-game map location from **The Crew Unlimited**
 
 The program reads your in-game location from the screen and updates your Discord status. Here's how it works:
 
-# 1. **OCR (Optical Character Recognition):**  
+### 1. **OCR (Optical Character Recognition):**  
    - The bot takes a small screenshot of your map’s HUD text and converts it to characters.
 
-# 2. **Matching Locations:**  
+### 2. **Matching Locations:**  
    - First tries an **exact match** against known sub-area names.  
    - If that fails, tries a **partial match** (for small OCR misreads).  
    - If still no match, uses **fuzzy matching**, but only if the first letter matches and the text is very similar.  
    - This ensures minor OCR errors don’t trigger completely wrong updates.
 
-# 3. **Transition Rules:**  
+### 3. **Transition Rules:**  
    - Certain area transitions have **special rules** (such as moving between a city and its surrounding region, entering an area that appears in multiple locations). The bot manages these automatically.
 
-# 4. **Discord Updates:**  
+### 4. **Discord Updates:**  
    - The bot only updates Discord when the confirmed location changes.  
    - Verbose logging shows every OCR read for debugging, but normal updates are minimized to avoid unnecessary Discord changes.  
    - Updates happen roughly every few seconds (controlled by `update_interval` in `config.json`). Typically, your Discord status reflects a location change within 2–4.5 seconds.
 
-# 5. **Misreads & Safety:**  
+### 5. **Misreads & Safety:**  
    - Some unusual OCR outputs might still appear temporarily, but the bot is designed to minimize false updates.  
    - If you notice its not reading/updating or is having persistent misreads, you can **redefine the OCR region** using F10.
 
