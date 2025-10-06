@@ -94,13 +94,17 @@ pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "Tesseract-OCR;Te
 
 ---
 
-## Terminal Hotkeys
-> NOTE: Make sure your terminal is focused before pressing any F-key.
 
-- **F9**   - Reload the language files (debug)  
-- **F10**  - Redefine OCR Region Dynamically  
-- **F11**  - Save a screenshot of the current OCR region  
-- **F12**  - Exit the program  
+### Hotkeys
+Some settings can also be toggled in real-time using F-keys (press the key while the terminal is focused):
+
+- **F6** – Toggle "Time Spent in Current Area" (`time_in_area`).  
+- **F7** – Toggle dynamic large images (`dynamic_large_image`).  
+- **F8** – Toggle verbose logging (`verbose_logging`).  
+- **F9** – Reload language files for OCR (debug).  
+- **F10** – Redefine the OCR region dynamically.  
+- **F11** – Save a screenshot of the current OCR region.  
+- **F12** – Exit the bot.
 
 ---
 
@@ -126,17 +130,6 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 - **time_in_area** – If `true`, the bot tracks how long you remain in each area.  
 - **dynamic_large_image** – If `true`, changes the large image based on the current main area.  
 - **verbose_logging** – Enables detailed console logging for debugging.
-
-### Hotkeys
-Some settings can also be toggled in real-time using F-keys (press the key while the terminal is focused):
-
-- **F6** – Toggle "Time Spent in Current Area" (`time_in_area`).  
-- **F7** – Toggle dynamic large images (`dynamic_large_image`).  
-- **F8** – Toggle verbose logging (`verbose_logging`).  
-- **F9** – Reload language files for OCR (debug).  
-- **F10** – Redefine the OCR region dynamically.  
-- **F11** – Save a screenshot of the current OCR region.  
-- **F12** – Exit the bot.
 
 ---
 
