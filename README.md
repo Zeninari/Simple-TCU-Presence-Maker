@@ -2,7 +2,7 @@
 
 ⚠️ **IMPORTANT:** 
 ## The program does not interact with the game directly, it only reads your screen to determine your location. 
-**THE SCRIPT REQUIRES THE OG HUD TO FUNCTION, IT WILL NOT WORK OTHERWISE**
+⚠️  **THE SCRIPT REQUIRES THE OG HUD TO FUNCTION, IT WILL NOT WORK OTHERWISE**⚠️ 
 
 ## Overview
 This tool displays your current in-game map location from **The Crew Unlimited** as a Discord Rich Presence status.
