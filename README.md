@@ -1,10 +1,12 @@
 # TCU Status Presence Maker
 
-## The program does not interact with the game directly, it only reads your screen to determine your location. 
-⚠️  **THE SCRIPT REQUIRES THE OG HUD TO FUNCTION, IT WILL NOT WORK OTHERWISE**⚠️ 
+> ⚠️ **Important:** This program does **not** interact with the game directly. It reads your screen to determine your location.  
+> **The script requires the original HUD to function and will not work otherwise.**
+
+---
 
 ## Overview
-This tool displays your current in-game map location from **The Crew Unlimited** as a Discord Rich Presence status.
+**TCU Status Presence Maker** displays your current in-game map location from **The Crew Unlimited** as a **Discord Rich Presence** status, updating automatically as you move around the map.
 
 ---
 
