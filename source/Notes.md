@@ -30,7 +30,7 @@ The most important settings in `config.json` are:
 ---
 
 ### `ocr_scale`
-- **Default:** `8`
+- **Default:** `10`
 - Scales the captured OCR region before text recognition to improve accuracy.
 
 **Drawbacks:**
