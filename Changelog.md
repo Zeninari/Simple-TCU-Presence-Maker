@@ -50,7 +50,7 @@
 - Fixed Discord Getting Unneded Updates
 - Fixed Verbrose Logging Not Logging All Changes, Even If Discord Wasn't Updated
 - Fixed The OCR Check To Be More Consistant
-- Removed SMART_FALLBACK (deprecicated)
+- Removed SMART_FALLBACK Toggle (deprecicated, This Will Always Be Used)
 
 ---
 
