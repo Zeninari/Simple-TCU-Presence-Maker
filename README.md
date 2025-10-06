@@ -1,7 +1,7 @@
 # TCU Status Presence Maker
 
-# **IMPORTANT:** 
-## The program does not interact with the game directly, it only reads your screen to determine your location. 
+## **IMPORTANT:** 
+### The program does not interact with the game directly, it only reads your screen to determine your location. 
 ⚠️  **THE SCRIPT REQUIRES THE OG HUD TO FUNCTION, IT WILL NOT WORK OTHERWISE**⚠️ 
 
 ## Overview
