@@ -38,7 +38,7 @@ The program reads your in-game location from the screen and updates your Discord
 
 ### 5. **Misreads & Safety:**  
    - Some unusual OCR outputs might still appear temporarily, but the bot is designed to minimize false updates.  
-   - If you notice its not reading/updating or is having persistent misreads, you can **redefine the OCR region** using **`F10`**.
+   - If you notice its not reading/updating or is having persistent misreads, you can **redefine the OCR region** using **`5`**.
 
 ---
 
@@ -96,15 +96,15 @@ pyinstaller --onefile --icon="TheCrewUnlimited.ico" --add-data "Tesseract-OCR;Te
 
 
 ### Hotkeys
-Some settings can also be toggled in real-time using F-keys (press the key while the terminal is focused):
+Some settings can also be toggled in real-time using Number-keys (press the key while the terminal is focused):
 
-- **F6** – Toggle "Time Spent in Current Area" (`time_in_area`).  
-- **F7** – Toggle dynamic large images (`dynamic_large_image`).  
-- **F8** – Toggle verbose logging (`verbose_logging`).  
-- **F9** – Reload language files for OCR (debug).  
-- **F10** – Redefine the OCR region dynamically.  
-- **F11** – Save a screenshot of the current OCR region.  
-- **F12** – Exit the bot.
+- **1** – Toggle "Time Spent in Current Area" (`time_in_area`).  
+- **2** – Toggle dynamic large images (`dynamic_large_image`).  
+- **3** – Toggle verbose logging (`verbose_logging`).  
+- **4** – Reload language files for OCR (debug).  
+- **5** – Redefine the OCR region dynamically.  
+- **6** – Save a screenshot of the current OCR region.  
+- **7** – Exit the bot.
 
 ---
 
@@ -153,7 +153,7 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 
 ## Notes
 - Again focus the terminal before using hotkeys.  
-- OCR relies on your screen resolution and map location; use **F10** to redefine the OCR if needed.
+- OCR relies on your screen resolution and map location; use **5** to redefine the OCR if needed.
 - When screenshotting an OCR region, make sure to **ONLY** include the sub region.
 - Only necessary tessdata files for selected languages are included to reduce size. 
 - You can also compile your own version of the bot using a custom Tesseract-OCR folder if desired.
