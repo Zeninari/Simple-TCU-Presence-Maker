@@ -148,6 +148,7 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 - PT - Portuguese  
 - DA - Danish  
 - NL - Dutch  
+- RU - Russian
 
 ---
 
