@@ -12,7 +12,7 @@ This tool displays your current in-game map location from **The Crew Unlimited**
 
 The program reads your in-game location from the screen and updates your Discord status. Here's how it works:
 
-1. **OCR (Optical Character Recognition):**  
+1. ## **OCR (Optical Character Recognition):**  
    - The bot takes a small screenshot of your map’s HUD text and converts it to characters.
 
 2. **Matching Locations:**  
