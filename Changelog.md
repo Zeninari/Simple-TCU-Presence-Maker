@@ -46,6 +46,7 @@
 - Fixed the grandcanyon not having its own area (seriously why is the areas in this game so weird)
 - Added Polish (mainly for my 2 polish testers)
 - Fixed F12 Triggering Screenshot On Close (For Steam Users)
+- Fixed F7 Not Repecting The Current Language
 
 ---
 
