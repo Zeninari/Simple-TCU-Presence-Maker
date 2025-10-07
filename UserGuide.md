@@ -47,9 +47,9 @@ The most important settings in `config.json` are:
 
 | Resolution      | Suggested `ocr_scale` | Suggested `update_interval` | Notes |
 |-----------------|------------------------|-----------------------------|-------|
-| **1080p (1920×1080)** | `8–10`  | `3–5` | Default config is tuned for this resolution. |
-| **1440p (2560×1440)** | `10–12` | `4–6` | Slightly higher scale improves recognition. |
-| **4K (3840×2160)**   | `12–14` | `5–7` | Larger scale needed; longer interval helps reduce CPU load. |
+| **1080p (1920×1080)** | `10–12`  | `3–5` | Default config is tuned for this resolution. |
+| **1440p (2560×1440)** | `12–14` | `4–6` | Slightly higher scale improves recognition. |
+| **4K (3840×2160)**   | `14–16` | `5–7` | Larger scale needed; longer interval helps reduce CPU load. |
 | **Ultrawide (3440×1440 / 5120×1440)** | `9–11` | `5–7` | Similar to 1440p/4K but may need tweaking. |
 
 ---
