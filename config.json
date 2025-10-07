@@ -4,20 +4,20 @@
   "ocr_scale": 10,
   "current_language": "",
   "ocr_region": [
-    1026,
-    653,
-    162,
-    88
+    1655,
+    772,
+    208,
+    36
   ],
   "time_in_area": "",
   "verbose_logging": "",
   "dynamic_large_image": "",
-  "large_image": "embedded_cover",
-  "large_text": "Once A 5-10, Always A 5-10",
-  "small_image": "thecrewunlimitedicon",
-  "small_text": "The Crew Unlimited",
-  "button1_label": "Join the TCU Discord Server!",
-  "button1_url": "https://discord.gg/tcu",
-  "button2_label": "Check the TCU YouTube Channel!",
-  "button2_url": "https://youtube.com/@whammy4"
+  "large_image": "",
+  "large_text": "",
+  "small_image": "",
+  "small_text": "",
+  "button1_label: "",
+  "button1_url": "",
+  "button2_label": "",
+  "button2_url": ""
 }
