@@ -67,6 +67,6 @@ If you experience higher CPU usage, try:
 ---
 
 ## Tips
-- Start with the defaults (`update_interval = 4`, `ocr_scale = 8`).
+- Start with the defaults (`update_interval = 4`, `ocr_scale = 10`).
 - If CPU usage is too high → **increase update_interval** or lower ocr_scale.  
 - If OCR accuracy is poor → **increase ocr_scale** slightly.  
