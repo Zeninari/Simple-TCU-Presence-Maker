@@ -95,7 +95,7 @@ pyinstaller --version
 
 then run this command to compile from the source:
 ```bash
-pyinstaller TcuStatus.spc
+pyinstaller TcuStatus.spec
 ```
 
 
