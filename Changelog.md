@@ -52,6 +52,8 @@
 - Fixed the **OCR** check to be more consistant and smarter
 - Removed **SMART_FALLBACK** toggle (deprecicated, this is now always used in verbrose logging)
 - Changed config keys from `F-Keys` to `Num Keys` for accessability
+- Added prompting the user on invalid or Missing `DISCORD_CLIENT_ID`
+- Fixed errors relating to new exit handling
 
 ---
 
