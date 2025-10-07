@@ -5,6 +5,8 @@
 
 > Borderless window recommended.
 
+> User guide is provided for more information under main
+
 > For fullscreen, **ENSURE** native resolution is selected. Set the ocr region in borderless window, and set back to fullscreen.
 > OCR **WILL** break if the resolution is set to something that your monitor doesn't support - i.e. Super Resolution
 
