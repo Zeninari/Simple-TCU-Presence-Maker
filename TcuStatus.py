@@ -66,6 +66,7 @@ def set_utf8_console():
         if hasattr(sys.stderr, "reconfigure"):
             sys.stderr.reconfigure(encoding="utf-8", errors="replace")
         if original_cp:
+            sys._original_cp = original_cp  # store it for clean exit
             def restore_cp():
                 os.system(f"chcp {original_cp} > nul")
             atexit.register(restore_cp)
@@ -161,18 +162,26 @@ def save_config(cfg):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
 
-def ensure_discord_client_id(cfg):
+def log_message(msg: str):
+    timestamp_full = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp_short = datetime.now().strftime("%H:%M:%S")
+    with open("TcuStatus.log", "a", encoding="utf-8") as f:
+        f.write(f"[{timestamp_full}] {msg}\n")
+    print(f"[{timestamp_short}] {msg}")
+
+def ensure_config_values(cfg):
     """
-    Checks if the Discord client ID is missing or invalid.
-    Prompts the user to enter it, validates it, saves it, and restarts automatically.
+    Ensures required config values exist and are valid.
+    Only prompts the user for missing/invalid values, saves to config.json,
     """
+    needs_setup = False  # track if we need to save & exit
+
+    # ---------------- Discord Client ID ----------------
     client_id = str(cfg.get("DISCORD_CLIENT_ID", "")).strip()
-
-    # If Missing or invalid ID, prompt the user
     if not client_id or not client_id.isdigit():
-        print("\n No valid Discord Client ID found in config.json.")
-        print("You can create one at: https://discord.com/developers/applications\n")
-
+        needs_setup = True
+        log_message("[!] No valid Discord Client ID found in config.json.")
+        print("\nYou can create one at: https://discord.com/developers/applications\n")
         while True:
             new_id = input("Please enter your Discord Client ID: ").strip()
             if not new_id:
@@ -182,20 +191,66 @@ def ensure_discord_client_id(cfg):
                 print("Invalid ID. Discord Client IDs contain only numbers.\n")
                 continue
             break
-
         cfg["DISCORD_CLIENT_ID"] = new_id
+        log_message(f"[+] Discord Client ID saved: {new_id}")
+
+    # ---------------- Current Language ----------------
+    valid_langs = list(OCR_LANGUAGE_MAP.keys())
+    curr_lang = str(cfg.get("current_language", "")).upper()
+    if curr_lang not in valid_langs:
+        needs_setup = True
+        print(f"\nSupported languages: {', '.join(valid_langs)}")
+        while True:
+            lang_input = input("Please enter your current language code (e.g., EN): ").strip().upper()
+            if lang_input not in valid_langs:
+                print(f"Invalid code. Supported codes: {', '.join(valid_langs)}\n")
+                continue
+            break
+        cfg["current_language"] = lang_input
+        log_message(f"[+] Current language set to: {lang_input}")
+
+    # ---------------- Time In Area ----------------
+    tia = cfg.get("time_in_area", None)
+    if tia not in (True, False):
+        needs_setup = True
+        response = input("Do you want the status to log how long you have been in an area? (yes/no): ").strip().lower()
+        tia = response in ("yes", "y")
+        cfg["time_in_area"] = tia
+        log_message(f"[+] Time in Area logging: {'enabled' if tia else 'disabled'}")
+
+    # ---------------- Verbose Logging ----------------
+    verbose = cfg.get("verbose_logging", None)
+    if verbose not in (True, False):
+        needs_setup = True
+        response = input("Do you want verbose logging (extra debug info)? (yes/no): ").strip().lower()
+        verbose = response in ("yes", "y")
+        cfg["verbose_logging"] = verbose
+        log_message(f"[+] Verbose logging: {'enabled' if verbose else 'disabled'}")
+
+    # ---------------- Dynamic Large Image ----------------
+    dyn_img = cfg.get("dynamic_large_image", None)
+    if dyn_img not in (True, False):
+        needs_setup = True
+        response = input("Do you want dynamic large images? (custom image per main area) (yes/no): ").strip().lower()
+        dyn_img = response in ("yes", "y")
+        cfg["dynamic_large_image"] = dyn_img
+        log_message(f"[+] Dynamic large images: {'enabled' if dyn_img else 'disabled'}")
+
+        if dyn_img:
+            print("Tip: Make sure your Images folder contains all the custom area images for full functionality.\n")
+
+    # ---------------- Save config & exit if setup was needed ----------------
+    if needs_setup:
         save_config(cfg)
-
-        print("\n Client ID saved successfully! Restarting the bot...\n")
-        time.sleep(1)
-
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+        log_message("[+] config.json settings have been saved.")
+        log_message("[!] Please rerun the Exe/Script")
+        time.sleep(3)
+        sys.exit(0)
 
     return cfg
 
 # Load configuration and ensures Discord client ID exists
-config = ensure_discord_client_id(load_config())
+config = ensure_config_values(load_config())
 
 # Override globals with config values
 UPDATE_INTERVAL   = config.get("update_interval", UPDATE_INTERVAL)
@@ -232,13 +287,6 @@ os.makedirs(OCR_CAPTURE_FOLDER, exist_ok=True)
 # =====================================================
 with open("TcuStatus.log", "w", encoding="utf-8") as f:
     f.write("")
-
-def log_message(msg: str):
-    timestamp_full = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    timestamp_short = datetime.now().strftime("%H:%M:%S")
-    with open("TcuStatus.log", "a", encoding="utf-8") as f:
-        f.write(f"[{timestamp_full}] {msg}\n")
-    print(f"[{timestamp_short}] {msg}")
 
 def toggle_timeinarea():
     global TIME_IN_AREA
@@ -378,7 +426,6 @@ def update_discord_status(main_area, sub_area):
         buttons.append({"label": BUTTON2_LABEL, "url": BUTTON2_URL})
 
     large_image_key = LARGE_IMAGE  # default
-    large_text = LARGE_TEXT
 
     if DYNAMIC_LARGE_IMAGE:
         # Use language file mappings if available
@@ -392,8 +439,8 @@ def update_discord_status(main_area, sub_area):
         rpc.update(
             state=str(sub_area),
             details=str(main_area),
-            large_image=large_image_key or None,
-            large_text=large_text or None,
+            large_image=large_image_key or LARGE_IMAGE,
+            large_text=LARGE_TEXT or None,
             small_image=SMALL_IMAGE or None,
             small_text=SMALL_TEXT or None,
             start=start_time,
@@ -577,16 +624,21 @@ def save_capture():
     except Exception as e:
         log_message(f"[!] save_capture() failed: {e}")
 
+# Exiting after reloading the bot due to invalid/missing DISCORD_CLIENT_ID is buggy.
+# If running via the .py it will captue all keypresses due to how it works.
 def exit_bot():
+    """Gracefully exit the bot."""
     global running
     running = False
-    log_message("[!] Exiting bot...")
+    log_message("[!] Exiting Bot Safely...")
+    os._exit(0)
 
-keyboard.add_hotkey("1", toggle_timeinarea)
-keyboard.add_hotkey("2", toggle_dynamic_large_image)
-keyboard.add_hotkey("3", toggle_verbose)
-keyboard.add_hotkey("4", reload_language_file_hotkey_safe)
-keyboard.add_hotkey("5", lambda: threading.Thread(target=define_ocr_region_overlay, daemon=True).start())
+# Hotkeys
+keyboard.add_hotkey("1", toggle_timeinarea, suppress=True)
+keyboard.add_hotkey("2", toggle_dynamic_large_image, suppress=True)
+keyboard.add_hotkey("3", toggle_verbose, suppress=True)
+keyboard.add_hotkey("4", reload_language_file_hotkey_safe, suppress=True)
+keyboard.add_hotkey("5", lambda: threading.Thread(target=define_ocr_region_overlay, daemon=False).start(), suppress=True)
 keyboard.add_hotkey("6", save_capture, suppress=True)
 keyboard.add_hotkey("7", exit_bot, suppress=True)
 
