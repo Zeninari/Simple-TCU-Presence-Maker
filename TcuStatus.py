@@ -161,7 +161,41 @@ def save_config(cfg):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
 
-config = load_config()
+def ensure_discord_client_id(cfg):
+    """
+    Checks if the Discord client ID is missing or invalid.
+    Prompts the user to enter it, validates it, saves it, and restarts automatically.
+    """
+    client_id = str(cfg.get("DISCORD_CLIENT_ID", "")).strip()
+
+    # If Missing or invalid ID, prompt the user
+    if not client_id or not client_id.isdigit():
+        print("\n No valid Discord Client ID found in config.json.")
+        print("You can create one at: https://discord.com/developers/applications\n")
+
+        while True:
+            new_id = input("Please enter your Discord Client ID: ").strip()
+            if not new_id:
+                print("No ID entered. Please try again.\n")
+                continue
+            if not new_id.isdigit():
+                print("Invalid ID. Discord Client IDs contain only numbers.\n")
+                continue
+            break
+
+        cfg["DISCORD_CLIENT_ID"] = new_id
+        save_config(cfg)
+
+        print("\n Client ID saved successfully! Restarting the bot...\n")
+        time.sleep(1)
+
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+    return cfg
+
+# Load configuration and ensures Discord client ID exists
+config = ensure_discord_client_id(load_config())
 
 # Override globals with config values
 UPDATE_INTERVAL   = config.get("update_interval", UPDATE_INTERVAL)
@@ -286,7 +320,7 @@ def load_language_file():
     transition_overrides = data.get("transition_overrides", [])
     main_images = data.get("main_images", {}) 
 
-    # Load main → sub mapping
+    # Load main to sub mapping
     for main_area, subs in data.items():
         if main_area in ("transition_overrides", "main_images"):
             continue
@@ -350,8 +384,6 @@ def update_discord_status(main_area, sub_area):
         # Use language file mappings if available
         if "main_images" in globals() and isinstance(main_images, dict):
             large_image_key = main_images.get(main_area, large_image_key)
-        
-        large_text = f"Current Region: {main_area}"
 
         if VERBOSE_LOGGING:
             log_message(f"[+] Dynamic Large Image updated to '{large_image_key}'")
@@ -407,10 +439,10 @@ def match_area_hybrid(ocr_text, possible_areas, fallback="Unknown Location"):
         if sub == ocr_norm:
             return possible_areas[i]
 
-    # Partial match (OCR text contained in sub or vice versa)
+    # Partial match (OCR text contained in the sub or vice versa)
     for i, sub in enumerate(possible_norm):
         if ocr_norm in sub or sub in ocr_norm:
-            # reduced length tolerance to 25% to prevent false positives
+            # length tolerance is 25% to prevent false positives
             if abs(len(sub) - len(ocr_norm)) / max(len(sub), 1) <= 0.25:
                 return possible_areas[i]
 
@@ -421,7 +453,7 @@ def match_area_hybrid(ocr_text, possible_areas, fallback="Unknown Location"):
         if (
             score >= 85  # require high similarity
             and abs(len(match) - len(ocr_norm)) / max(len(match), 1) <= 0.25  # length sanity
-            and ocr_norm[0] == match[0]  # first-letter must match
+            and ocr_norm[0] == match[0]  # first-letter MUST match
         ):
             return possible_areas[possible_norm.index(match)]
 
@@ -438,19 +470,19 @@ def main_loop():
                 time.sleep(0.2)
                 continue
 
-            # Capture OCR region
+            # Capture the OCR region
             zone_img = pyautogui.screenshot(region=ZONE_COORDS)
             ocr_raw = pytesseract.image_to_string(
                 preprocess_zone_image(zone_img), lang=ocr_lang, config="--psm 7"
             )
             ocr_clean = clean_ocr_text(ocr_raw)
 
-            # Match sub-area using hybrid matcher
+            # Match sub-area using the hybrid matcher
             matched_sub = match_area_hybrid(ocr_clean, all_sub_areas_list, fallback="Unknown Location")
             possible_mains = sub_to_mains_list.get(matched_sub.upper(), [])
             matched_main = "Unknown Main Area"
 
-            # Determine main area based on buffer
+            # Determine main area based on the buffer
             if len(possible_mains) == 1:
                 matched_main = main_buffer = possible_mains[0]
             elif len(possible_mains) > 1 and main_buffer in possible_mains:
@@ -477,7 +509,7 @@ def main_loop():
                         log_message(f"[!] Transition override applied: {from_sub} → {to_sub} → Main: {main_override}")
                         break
 
-            # Only update last_confirmed_sub if valid
+            # Only update last_confirmed_sub is valid
             if matched_sub != "Unknown Location":
                 last_confirmed_sub = matched_sub
 
@@ -486,11 +518,11 @@ def main_loop():
             if VERBOSE_LOGGING:
                 log_message(f"[VERBOSE] OCR Zone: '{ocr_clean}' | Sub: '{matched_sub}' | Main: '{matched_main}' | Fallback: {is_fallback}")
 
-            # Determine final values for comparison
+            # Determine final values for comparison check
             final_sub = matched_sub if matched_sub != "Unknown Location" else current_sub
             final_main = matched_main if matched_main != "Unknown Main Area" else current_main
 
-            # Only update Discord if location actually changed
+            # Only update Discord if the location actually changed
             location_changed = (final_sub != current_sub) or (final_main != current_main)
 
             if location_changed:
@@ -502,7 +534,7 @@ def main_loop():
                 if SMART_FALLBACK and is_fallback:
                     if VERBOSE_LOGGING:
                         log_message(f"[!] SMART_FALLBACK ignored fallback OCR: (Sub='{final_sub}', Main='{final_main}')")
-                    # Do not update Discord or change current_main/current_sub
+
                 else:
                     log_message(f"OCR Zone: '{ocr_clean}' | Sub: '{final_sub}' | Main: '{final_main}'")
                     try:
@@ -511,7 +543,7 @@ def main_loop():
                     except Exception as e:
                         log_message(f"[!] Failed to update Discord: {e}")
 
-                    # Update current location after successful update
+                    # Update the current location after a successful update
                     current_main, current_sub = final_main, final_sub
 
             time.sleep(UPDATE_INTERVAL)
