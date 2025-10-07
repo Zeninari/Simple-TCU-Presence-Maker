@@ -169,10 +169,15 @@ def log_message(msg: str):
         f.write(f"[{timestamp_full}] {msg}\n")
     print(f"[{timestamp_short}] {msg}")
 
+# =====================================================
+# --------------- Verification Check ------------------
+# =====================================================
+
 def ensure_config_values(cfg):
     """
     Ensures required config values exist and are valid.
-    Only prompts the user for missing/invalid values, saves to config.json,
+    Prompts user for missing critical fields, and allows "default" to use preset defaults
+    for Discord image/text/button fields.
     """
     needs_setup = False  # track if we need to save & exit
 
@@ -184,10 +189,7 @@ def ensure_config_values(cfg):
         print("\nYou can create one at: https://discord.com/developers/applications\n")
         while True:
             new_id = input("Please enter your Discord Client ID: ").strip()
-            if not new_id:
-                print("No ID entered. Please try again.\n")
-                continue
-            if not new_id.isdigit():
+            if not new_id or not new_id.isdigit():
                 print("Invalid ID. Discord Client IDs contain only numbers.\n")
                 continue
             break
@@ -209,35 +211,48 @@ def ensure_config_values(cfg):
         cfg["current_language"] = lang_input
         log_message(f"[+] Current language set to: {lang_input}")
 
-    # ---------------- Time In Area ----------------
-    tia = cfg.get("time_in_area", None)
-    if tia not in (True, False):
-        needs_setup = True
-        response = input("Do you want the status to log how long you have been in an area? (yes/no): ").strip().lower()
-        tia = response in ("yes", "y")
-        cfg["time_in_area"] = tia
-        log_message(f"[+] Time in Area logging: {'enabled' if tia else 'disabled'}")
+    # ---------------- Time / Verbose / Dynamic ----------------
+    bool_fields = {
+        "time_in_area": False,
+        "verbose_logging": False,
+        "dynamic_large_image": False
+    }
+    for key, default in bool_fields.items():
+        val = cfg.get(key)
+        if val not in (True, False):
+            needs_setup = True
+            response = input(f"Do you want {key.replace('_',' ')}? (yes/no) [default: {default}]: ").strip().lower()
+            cfg[key] = response in ("yes", "y") if response not in ("default", "use default", "") else default
+            log_message(f"[+] {key} set to: {cfg[key]}")
 
-    # ---------------- Verbose Logging ----------------
-    verbose = cfg.get("verbose_logging", None)
-    if verbose not in (True, False):
-        needs_setup = True
-        response = input("Do you want verbose logging (extra debug info)? (yes/no): ").strip().lower()
-        verbose = response in ("yes", "y")
-        cfg["verbose_logging"] = verbose
-        log_message(f"[+] Verbose logging: {'enabled' if verbose else 'disabled'}")
+    # ---------------- Discord Image / Text / Buttons ----------------
+    discord_defaults = {
+        "large_image": "embedded_cover",
+        "large_text": "Once A 5-10, Always A 5-10",
+        "small_image": "thecrewunlimitedicon",
+        "small_text": "The Crew Unlimited",
+        "button1_label": "Join the TCU Discord Server!",
+        "button1_url": "https://discord.gg/tcu",
+        "button2_label": "Check the TCU YouTube Channel!",
+        "button2_url": "https://youtube.com/@whammy4"
+    }
 
-    # ---------------- Dynamic Large Image ----------------
-    dyn_img = cfg.get("dynamic_large_image", None)
-    if dyn_img not in (True, False):
-        needs_setup = True
-        response = input("Do you want dynamic large images? (custom image per main area) (yes/no): ").strip().lower()
-        dyn_img = response in ("yes", "y")
-        cfg["dynamic_large_image"] = dyn_img
-        log_message(f"[+] Dynamic large images: {'enabled' if dyn_img else 'disabled'}")
+    for key, default in discord_defaults.items():
+        val = cfg.get(key)
+        if not val or not isinstance(val, str):
+            needs_setup = True
+            prompt_text = f"Enter value for '{key}' or type 'default' to use default [{default}]: "
+            user_input = input(prompt_text).strip()
+            if user_input.lower() in ("default", "use default", ""):
+                cfg[key] = default
+            else:
+                cfg[key] = user_input
+            log_message(f"[+] {key} set to: {cfg[key]}")
 
-        if dyn_img:
-            print("Tip: Make sure your Images folder contains all the custom area images for full functionality.\n")
+    # ---------------- OCR / Interval Defaults ----------------
+    cfg["update_interval"] = cfg.get("update_interval", 10)
+    cfg["ocr_scale"] = cfg.get("ocr_scale", 4)
+    cfg["ocr_region"] = tuple(cfg.get("ocr_region", (1655, 772, 208, 36)))
 
     # ---------------- Save config & exit if setup was needed ----------------
     if needs_setup:
@@ -248,6 +263,10 @@ def ensure_config_values(cfg):
         sys.exit(0)
 
     return cfg
+
+# =====================================================
+# ------------------ Load Config ----------------------
+# =====================================================
 
 # Load configuration and ensures Discord client ID exists
 config = ensure_config_values(load_config())
