@@ -104,7 +104,7 @@ pyinstaller TcuStatus.spec
 
 
 ### Hotkeys
-Some settings can also be toggled in real-time using Number-keys (press the key while the terminal is focused):
+Some settings can also be toggled in real-time using Number-keys (pressing the key while the terminal is focused is recomended):
 
 - **1** – Toggle "Time Spent in Current Area" (`time_in_area`).  
 - **2** – Toggle dynamic large images (`dynamic_large_image`).  
@@ -161,7 +161,7 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 ---
 
 ## Notes
-- Again focus the terminal before using hotkeys.  
+- Focusing on the terminal is recomended before using hotkeys but is not required.  
 - OCR relies on your screen resolution and map location; use **5** to redefine the OCR if needed.
 - When screenshotting an OCR region, make sure to **ONLY** include the sub region.
 - Only necessary tessdata files for selected languages are included to reduce size. 
