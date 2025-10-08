@@ -1,7 +1,7 @@
 # TCU Status Presence Maker
 
 > ⚠️ **Important:** This program does **not** interact with the game directly. It reads your screen to determine your location.  
-> **The script doesn't requires the original HUD to function, but is recomended**
+> **The script doesn't require the original HUD to function, but is recomended**
 
 > ⚠️ **Note:** **ONLY THE CURRENT LANGUAGES ARE SUPPORTED, SELECTING ANY OTHER LANGUAGE WON'T DO ANYTHING. I WILL ADD MORE SUPPORTED LNAGUAGES OVERTIME**:  
 > En, PL, & RU
