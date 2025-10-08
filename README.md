@@ -74,7 +74,7 @@ TcuStatus requires python to run, if it's not installed go to [Python.Org](https
 If you prefer to run the script directly (`TcuStatus.py`), you will need to install the following Python dependencies:
 
 ```bash
-pip install pyautogui pygetwindow pytesseract pillow keyboard pypresence
+pip install pyautogui pygetwindow pyrect pytesseract pillow keyboard pypresence rapidfuzz
 ```
 
 Then run:
