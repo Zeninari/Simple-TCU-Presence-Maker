@@ -58,7 +58,7 @@ Before running the program, you need to create your **own Discord application** 
 ### Step 2: If you prefer to use your own images, buttons, & urls, you have two options:
 
 1. Put in the information into the `config.json`.  
-2. Use the setup provided by the terminal on first setup (**_or if one is missing or invalid_**) to set what you want to use without having to touch the `config.json`. the only thing you cannot set maually during this process is OCR cordinates, and the amount of time it updates.
+2. Use the setup provided by the terminal on first setup (**_or if one is missing or invalid_**) to set what you want to use without having to touch the `config.json`. the only thing you cannot set maually during this process is OCR cordinates, and the update interval.
 
 ---
 
