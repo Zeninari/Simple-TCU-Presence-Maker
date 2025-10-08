@@ -63,7 +63,7 @@ Before running the program, you need to create your **own Discord application** 
 ---
 
 ### Option 1: Run the Executable
-Simply launch **TCUStatus.exe**. No additional dependencies are required.
+Simply launch **TCUStatus.exe**. No additional dependencies are required when using the defaults.
 
 ### Option 2: Run the Python Source File
 
@@ -134,7 +134,6 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 - **ocr_scale** – Scaling factor for OCR accuracy (higher = more precise).  
 - **current_language** – ISO language code for OCR (e.g., `EN`, `PL`).  
 - **ocr_region** – `[x, y, width, height]` of the screen region the OCR reads.  
-- **smart_fallback** – Enables fallback detection when the OCR result is ambiguous.  
 - **time_in_area** – If `true`, the bot tracks how long you remain in each area.  
 - **dynamic_large_image** – If `true`, changes the large image based on the current main area.  
 - **verbose_logging** – Enables detailed console logging for debugging.
@@ -161,13 +160,14 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 ---
 
 ## Notes
-- Focusing on the terminal is recomended before using hotkeys but is not required.  
+- Focusing on the terminal is recomended before using hotkeys but is not required.
 - OCR relies on your screen resolution and map location; use **5** to redefine the OCR if needed.
-- When screenshotting an OCR region, make sure to **ONLY** include the sub region.
-- Only necessary tessdata files for selected languages are included to reduce size. 
+- When screenshotting the OCR region, make sure to **ONLY** include the sub region.
+- Only necessary tessdata files for selected languages are included to reduce size.
 - You can also compile your own version of the bot using a custom Tesseract-OCR folder if desired.
-- Make sure config.json and Language/ folder are in the same directory as the executable
+- Make sure `config.json` and Language/ folder are in the same directory as the executable
 - If running from source, also make sure the `Tesseract-OCR` folder is in the same directory
+- If you run into an issue, open a request
 
 ---
 
