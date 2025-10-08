@@ -55,10 +55,10 @@ Before running the program, you need to create your **own Discord application** 
 3. Open `config.json` in the program folder and enter your Discord **Client ID** under `DISCORD_CLIENT_ID`.  
 4. To use the default images and area rich presence, upload the images from the `Images/` folder to your Discord application under **Rich Presence → Art Assets**. The provided names are already formatted to match the defaults for the `config.json`, so the bot will use them automatically if using the defaults.
 
-### Step 2: If you prefer to use your own images for the `large_image`, you have two options:
+### Step 2: If you prefer to use your own images, buttons, & urls, you have two options:
 
-1. For a **static image**, upload it under any name and copy that name into `large_image` in `config.json`.  
-2. For a **dynamic large area image**, upload it with the same name as in the folder. For example, upload `midwest` for the Midwest region (this will persist regardless of language).
+1. Put in the information into the `config.json`.  
+2. Use the setup provided by the terminal on first setup (**_or if one is missing or invalid_**) to set what you want to use without having to touch the `config.json`. the only thing you cannot set maually during this process is OCR cordinates, and the amount of time it updates.
 
 ---
 
