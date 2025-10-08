@@ -3,15 +3,22 @@
   "update_interval": 4,
   "ocr_scale": 10,
   "current_language": "",
+  "wr_ocr_region": [
+    1367,
+    1011,
+    222,
+    41
+  ],
   "ocr_region": [
     1655,
     772,
     208,
     36
   ],
+  "force_hud": "",
   "time_in_area": "",
-  "verbose_logging": "",
   "dynamic_large_image": "",
+  "verbose_logging": "",
   "large_image": "",
   "large_text": "",
   "small_image": "",
