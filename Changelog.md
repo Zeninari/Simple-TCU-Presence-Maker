@@ -55,6 +55,15 @@
 - Added prompting the user in the terminal to input config values on invalid or Missing values
 - Fixed errors relating to new exit handling
 
+## v0.9.9 hotfix
+- **added WR Hud Support!**
+- Fixed the program unexpectedly crashing if discord isn't running. now throws an error and exits gracefully.
+- Fixed log files from _maybe_ crashing the program if the log file was locked, or the disc is getting full.
+- Fixed arrow keys and a few other keys firing the top row number key functions
+- Fixed the capture function now that theres 2 huds
+- Added 8 (switch capturing hud on the fly) and moved 8 to 9 (exit)
+- Added Russian
+
 ---
 
 **Note:** there are versions from before v0.9, but i did not start logging changes until version v0.9
