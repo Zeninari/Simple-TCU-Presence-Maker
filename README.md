@@ -3,9 +3,10 @@
 > ⚠️ **Important:** This program does **not** interact with the game directly. It reads your screen to determine your location.  
 > **The script requires the original HUD to function and will not work otherwise.**
 
-> Borderless window recommended.
+> ⚠️ **Note:** **ONLY THE CURRENT LANGUAGES ARE SUPPORTED, SELECTING ANY OTHER LANGUAGE WON'T DO ANYTHING. I WILL ADD MORE SUPPORTED LNAGUAGES OVERTIME**:  
+> En & PL
 
-> User guide is provided for more information under `main`
+> Borderless window recommended. A User guide is provided for more information under `main`
 
 > For fullscreen, **ENSURE** native resolution is selected. Set the ocr region in borderless window, and set back to fullscreen.
 > OCR **WILL** break if the resolution is set to something that your monitor doesn't support - i.e. Super Resolution
