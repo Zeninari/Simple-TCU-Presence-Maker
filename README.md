@@ -53,7 +53,7 @@ Before running the program, you need to create your **own Discord application** 
 1. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a new application.  
 2. Add a bot to the application and copy its **Client ID**.  
 3. Open `config.json` in the program folder and enter your Discord **Client ID** under `DISCORD_CLIENT_ID`.  
-4. To use the default images and area rich presence, upload the images from the `Images/` folder to your Discord application under **Rich Presence → Art Assets**. The provided names are already formatted to match `config.json`, so the bot will use them automatically.
+4. To use the default images and area rich presence, upload the images from the `Images/` folder to your Discord application under **Rich Presence → Art Assets**. The provided names are already formatted to match the defaults for the `config.json`, so the bot will use them automatically if using the defaults.
 
 ### Step 2: If you prefer to use your own images for the `large_image`, you have two options:
 
