@@ -1,10 +1,10 @@
 # TCU Status Presence Maker
 
 > ⚠️ **Important:** This program does **not** interact with the game directly. It reads your screen to determine your location.  
-> **The script requires the original HUD to function and will not work otherwise.**
+> **The script doesn't requires the original HUD to function, but is recomended**
 
 > ⚠️ **Note:** **ONLY THE CURRENT LANGUAGES ARE SUPPORTED, SELECTING ANY OTHER LANGUAGE WON'T DO ANYTHING. I WILL ADD MORE SUPPORTED LNAGUAGES OVERTIME**:  
-> En & PL
+> En, PL, & RU
 
 > Borderless window recommended. A User guide is provided for more information under `main`
 
@@ -110,9 +110,11 @@ Some settings can also be toggled in real-time using Number-keys (pressing the k
 - **2** – Toggle dynamic large images (`dynamic_large_image`).  
 - **3** – Toggle verbose logging (`verbose_logging`).  
 - **4** – Reload language files for OCR (debug).  
-- **5** – Redefine the OCR region dynamically.  
-- **6** – Save a screenshot of the current OCR region.  
-- **7** – Exit the bot.
+- **5** – Redefine WR OCR Region Dynamically 
+- **6** – Redefine OG OCR Region Dynamically 
+- **7** – Screenshot Current Chosen OCR Region
+- **8** – Swap Between Capture Zones (Wr;OG)  
+- **9** – Exit the bot.
 
 ---
 
@@ -133,7 +135,9 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 - **update_interval** – How often the OCR reads the map, in seconds.  
 - **ocr_scale** – Scaling factor for OCR accuracy (higher = more precise).  
 - **current_language** – ISO language code for OCR (e.g., `EN`, `PL`).  
-- **ocr_region** – `[x, y, width, height]` of the screen region the OCR reads.  
+- **wr_ocr_region** – `[x, y, width, height]` of the screen region the OCR reads for the WR hud. 
+- **ocr_region** – `[x, y, width, height]` of the screen region the OCR reads for the OG hud. 
+- **force_hud** - what version of the hud OCR is reading
 - **time_in_area** – If `true`, the bot tracks how long you remain in each area.  
 - **dynamic_large_image** – If `true`, changes the large image based on the current main area.  
 - **verbose_logging** – Enables detailed console logging for debugging.
