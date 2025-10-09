@@ -35,7 +35,7 @@ The most important settings in `config.json` are:
 
 **Drawbacks:**
 - Too low (2–4): Poor OCR accuracy, more misreads.
-- Too high (12+): More CPU usage and slightly slower updates.
+- Too high (15+): More CPU usage and slightly slower updates.
 
 ---
 
@@ -54,19 +54,34 @@ The most important settings in `config.json` are:
 
 ---
 
+## Table For Tessdata Benifits & Drawbacks
+
+| Model           | Accuracy | Speed (relative) | File Size | Best For / Notes | Trade-offs |
+|-----------------|---------|-----------------|-----------|-----------------|-----------|
+| **tessdata_fast** | Medium-Low | Fastest | Small (~10–20 MB per language) | Good for English and languages with simple characters. | May misread diacritics or accented characters (é, ç, ñ, etc.). Not recommended for complex languages |
+| **tessdata**      | Medium-High | Moderate | Medium (~20–50 MB per language) | Balanced choice for most European languages | Slightly slower than `tessdata_fast`. Handles diacritics better, but not as accurate as `tessdata_best` |
+| **tessdata_best** | Highest | Slowest | Large (~50–100 MB per language) | Essential for accuracy-sensitive languages | Slowest to load and process. Larger downloads. | 
+
+### **Performance consideration**:  
+- Processing time scales with image size and model complexity. Upscaling images will amplify differences in speed.    
+
+---
+
 ## Performance Notes
 
-On my system (**Intel Core i5-13420H**, 8 cores / 12 threads @ 2.1–4.6 GHz), the program typically uses **~0–0.6% CPU** while running with the default settings (`ocr_scale = 8`, `update_interval = 4`) at **1080p resolution**.  
+On my system (**Intel Core i5-13420H**, 8 cores / 12 threads @ 2.1–4.6 GHz), the program typically uses **~0–1% CPU** while running with the default settings (`ocr_scale = 10`, `update_interval = 4`) at **1080p resolution**.  
 
-Performance may vary on lower-end CPUs or at higher resolutions (1440p / 4K), where OCR has to process more pixels.
+Performance may vary on lower-end CPUs or at higher resolutions (1440p / 4K), where OCR has to process more pixels, or when using `tessdata_fast` vs `tessdata` & `tessdata_best`
 
 If you experience higher CPU usage, try:  
 - Increasing `update_interval` slightly (e.g., from `4` → `6`) to reduce OCR checks per second.  
 - Lowering `ocr_scale` if recognition is already accurate enough.
+- Tinkering is recomended for advanced users
 
 ---
 
 ## Tips
 - Start with the defaults (`update_interval = 4`, `ocr_scale = 10`).
 - If CPU usage is too high → **increase update_interval** or lower ocr_scale.  
-- If OCR accuracy is poor → **increase ocr_scale** slightly.  
+- If OCR accuracy is poor → **increase ocr_scale** slightly, or use a higher `tessdata` model at the expense of discord update speed.
+- if that also fails try fiddling with the OCR region if needed.
