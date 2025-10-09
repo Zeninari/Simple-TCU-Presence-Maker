@@ -1,14 +1,11 @@
 # TCU Status Presence Maker
 
-> ⚠️ **Important:** This program does **not** interact with the game directly. It reads your screen to determine your location.  
-> **The script doesn't require the original HUD to function, but is recomended**
-
-> ⚠️ **Note:** **ONLY THE CURRENT LANGUAGES ARE SUPPORTED, SELECTING ANY OTHER LANGUAGE WON'T DO ANYTHING. I WILL ADD MORE SUPPORTED LNAGUAGES OVERTIME**:  
-> En, PL, & RU
-
-> Borderless window recommended. A User guide is provided for more information under `main`
-
-> For fullscreen, **ENSURE** native resolution is selected. Set the ocr region in borderless window, and set back to fullscreen.
+> ⚠️ **Important:**<br>
+> - This program does **not** interact with the game directly. It reads your screen to determine your location.<br>
+> - **The script doesn't require the original HUD to function, but is recomended**<br>
+> - **ONLY THE CURRENT LANGUAGES ARE SUPPORTED**: EN, PL, RU<br>
+> - Borderless window recommended. A User guide is provided for more information under `main`<br>
+> - For fullscreen, **ENSURE** native resolution is selected. Set the ocr region in borderless window, and set back to fullscreen.
 > OCR **WILL** break if the resolution is set to something that your monitor doesn't support - i.e. Super Resolution
 
 ---
@@ -60,6 +57,23 @@ Before running the program, you need to create your **own Discord application** 
 1. Put in the information into the `config.json`.  
 2. Use the setup provided by the terminal on first setup (**_or if one is missing or invalid_**) to set what you want to use without having to touch the `config.json`. the only thing you cannot set maually during this process is OCR cordinates, and the update interval.
 
+### Step 3: Optional: Persistent OCR Models (Tesseract):
+
+By default, **TCU Status** downloads the required Tesseract OCR models into a **temporary embedded folder** each time it runs. This keeps the program lightweight — but the downloaded files are deleted when you close the bot.
+
+If you’d like to **keep the OCR data permanently** (to avoid redownloading or work offline), you can set up a persistent folder. To do this, copy the `Tesseract-OCR` folder from the **source** and place it next to the executable.  
+
+Your directory should look like this:
+
+📂 TCU_Bot/<br>
+├── TCU_Bot.exe<br>
+├── 📁 Tesseract-OCR/<br>
+│ ├── tesseract.exe<br>
+│ ├── (all required dll's)<br>
+│ └── 📁 tessdata/<br>
+│ ├── eng.traineddata<br>
+│ └── . . . 
+
 ---
 
 ### Option 1: Run the Executable
@@ -110,10 +124,10 @@ Some settings can also be toggled in real-time using Number-keys (pressing the k
 - **2** – Toggle dynamic large images (`dynamic_large_image`).  
 - **3** – Toggle verbose logging (`verbose_logging`).  
 - **4** – Reload language files for OCR (debug).  
-- **5** – Redefine WR OCR Region Dynamically 
-- **6** – Redefine OG OCR Region Dynamically 
+- **5** – Redefine `WR` OCR Region Dynamically 
+- **6** – Redefine `OG` OCR Region Dynamically 
 - **7** – Screenshot Current Chosen OCR Region
-- **8** – Swap Between Capture Zones (Wr;OG)  
+- **8** – Swap Between Capture Zones (`Wr`;`OG`)  
 - **9** – Exit the bot.
 
 ---
