@@ -7,11 +7,12 @@
 
 ## Setup Notes
 
-- You **must make your own bot** to use this program and enter its information into `config.json`.
-- The **buttons** have predefined values but can be changed to your liking in the config.
+- You **must make your own bot** to use this program and enter its information on setup(`this is recomended`) or directly into the `config.json`.
+- The **buttons** have predefined values but can be changed to your liking
 - There is an **example screenshot** in the `Capture/` folder showing where the OCR region should roughly be (for debugging purposes).
 - The OCR is currently configured for **1080p screens**.  
-  If your resolution differs, you may need to press the **OCR reconfiguration key `(F10)`** to adjust the region for better results.
+- If your resolution differs, you may need to press the **OCR reconfiguration key (`See Bellow`)** to adjust the region for better results.
+- Press `Alt+5` for WR UI and `Alt+6` for OG Hud
 
 ---
 
