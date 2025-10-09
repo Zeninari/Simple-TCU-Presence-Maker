@@ -1,4 +1,5 @@
 import os
+import urllib.request
 import sys
 import atexit
 import subprocess
@@ -8,6 +9,7 @@ import threading
 from datetime import datetime
 from difflib import get_close_matches
 from rapidfuzz import process, fuzz
+from collections import Counter
 import re
 import pyautogui
 import pytesseract
@@ -20,6 +22,7 @@ import unicodedata
 # =====================================================
 # ---------------- Runtime Globals --------------------
 # =====================================================
+
 running = True                # master loop control
 pause_ocr = False             # pause flag (when overlay active)
 overlay_enabled = False       # prevent multiple overlay windows
@@ -29,6 +32,7 @@ current_sub = None            # current confirmed sub area
 main_buffer = None            # buffer for disambiguating multi-main subs
 last_confirmed_sub = None     # used for transition overrides
 previous_main_context = None  # backup for context-sensitive mapping
+current_active_region = None  # global tracker
 
 all_sub_areas_list = []       # flat list of all sub areas
 sub_areas_map = {}            # sub → [main, ...]
@@ -37,20 +41,27 @@ sub_to_mains_list = {}        # uppercase sub → [main, ...]
 transition_overrides = []     # list of override rules
 
 # OCR global defaults
-ZONE_COORDS = (1655, 772, 208, 36)   # default OCR region
-SMART_FALLBACK = True                # ignore noisy results
+ZONE_COORDS = (1655, 772, 208, 36)    # default OCR region
+WR_ZONE_COORDS = (1655, 772, 208, 36) # default WR OCR region
+SMART_FALLBACK = True                 # ignore noisy results
+
+# live downloading
+# TESSDATA_RELEASE_BASE = "https://github.com/tesseract-ocr/{repo}/releases/download/{version}/{lang}.traineddata"
+TESSERACT_BASE = "https://github.com/tesseract-ocr/{repo}/raw/main/"
 
 # Logging & fuzzy thresholds
 TIME_IN_AREA = False
 DYNAMIC_LARGE_IMAGE = False
 VERBOSE_LOGGING = False
-FUZZY_THRESHOLD = 95
+FUZZY_THRESHOLD = 90
 OCR_SCALE = 4
 UPDATE_INTERVAL = 10
+HUD_TYPE = "OG"
 
 # =====================================================
 # ---------------- UTF-8 Console Setup ----------------
 # =====================================================
+
 def set_utf8_console():
     if os.name == "nt":
         result = subprocess.run("chcp", capture_output=True, text=True, shell=True)
@@ -76,6 +87,7 @@ set_utf8_console()
 # =====================================================
 # ---------------- OCR Language Map -------------------
 # =====================================================
+
 OCR_LANGUAGE_MAP = {
     "EN": "eng", "FI": "fin", "FR": "fra", "DE": "deu", "JP": "jpn",
     "NO": "nor", "IT": "ita", "PL": "pol", "ES": "spa", "SV": "swe",
@@ -87,6 +99,7 @@ def get_ocr_language(lang_code: str) -> str:
 # =====================================================
 # -------------- OCR Text Normalization --------------
 # =====================================================
+
 COMMON_OCR_MISREADS = {
     "ß": "ss",
     "ø": "o", "Ø": "O",
@@ -113,12 +126,13 @@ COMMON_OCR_MISREADS = {
     "Ѵ": "V", "ѵ": "v",
 }
 
-def normalize_ocr_text(text: str) -> str:
+def normalize_ocr_text(text: str, verbose: bool = False) -> str:
     """
     Converts OCR text to a normalized form for fuzzy matching:
     - Strips accents & diacritics
     - Maps common misreads to expected letters
     - Converts to uppercase
+    - Logs summary of replaced characters if verbose logging
     """
     if not text:
         return ""
@@ -129,17 +143,31 @@ def normalize_ocr_text(text: str) -> str:
     # Remove combining marks (accents)
     text = "".join(c for c in text if not unicodedata.combining(c))
     
-    # Map common OCR misreads
-    text = "".join(COMMON_OCR_MISREADS.get(c, c) for c in text)
+    # Map common OCR misreads and track counts
+    normalized_chars = []
+    replacement_counts = {}
+    for c in text:
+        new_c = COMMON_OCR_MISREADS.get(c, c)
+        normalized_chars.append(new_c)
+        if verbose and c != new_c:
+            replacement_counts[(c, new_c)] = replacement_counts.get((c, new_c), 0) + 1
+    
+    text = "".join(normalized_chars)
     
     # Remove extra whitespace and unwanted symbols
     text = re.sub(r"[^A-Za-z0-9\s\-]", "", text)
+    
+    # Log summary of replacements
+    if verbose and replacement_counts:
+        summary = ', '.join(f"{orig}->{new} x{count}" for (orig, new), count in replacement_counts.items())
+        print(f"[OCR Normalize] Replacements summary: {summary}")
     
     return text.upper()
 
 # =====================================================
 # ---------------- Resource Handling ------------------
 # =====================================================
+
 def resource_path(relative_path):
     """Resolves paths correctly for both .py and .exe (PyInstaller) builds."""
     if hasattr(sys, "_MEIPASS"):
@@ -149,6 +177,7 @@ def resource_path(relative_path):
 # =====================================================
 # ---------------- Config Handling --------------------
 # =====================================================
+
 CONFIG_FILE = os.path.join(
     os.path.dirname(sys.executable if getattr(sys, "frozen", False) else __file__),
     "config.json"
@@ -165,9 +194,174 @@ def save_config(cfg):
 def log_message(msg: str):
     timestamp_full = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     timestamp_short = datetime.now().strftime("%H:%M:%S")
-    with open("TcuStatus.log", "a", encoding="utf-8") as f:
-        f.write(f"[{timestamp_full}] {msg}\n")
+    
+    try:
+        with open("TcuStatus.log", "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp_full}] {msg}\n")
+    except Exception as e:
+        # If writing fails, notify in console but continue
+        print(f"[!] Failed to write log file: {e}")
+
     print(f"[{timestamp_short}] {msg}")
+
+# =====================================================
+# ----------------- Persistent Tessdata ---------------
+# =====================================================
+
+# Folder next to source (writable, used if running from source)
+SOURCE_TESSDATA = resource_path(os.path.join("Tesseract-OCR", "tessdata"))
+
+# Folder next to EXE (writable, used for installer version)
+EXE_TESSDATA = os.path.join(os.path.dirname(sys.executable), "tessdata")
+
+# Persistent user-writeable folder (final fallback)
+PERSISTENT_TESSDATA = os.path.join(os.path.expanduser("~"), "TCU_Tessdata")
+os.makedirs(PERSISTENT_TESSDATA, exist_ok=True)
+
+# =====================================================
+# --------------- Tessdata Download ------------------
+# =====================================================
+
+LANG_REPO_MAP = {
+    "jpn": "tessdata_best",  # Japanese accuracy-sensitive
+    "rus": "tessdata_best",  # Russian accuracy-sensitive
+
+    # Languages with moderate risk of diacritic misreads
+    "fra": "tessdata",  # French
+    "pol": "tessdata",  # Polish
+    "spa": "tessdata",  # Spanish
+    "ces": "tessdata",  # Czech
+    "por": "tessdata",  # Portuguese
+}
+
+TESSDATA_RELEASES = {
+    "tessdata_best": "4.1.0",
+    "tessdata_fast": "4.1.0",
+    "tessdata": "4.1.0",
+}
+
+DEFAULT_REPO = "tessdata_fast"  # regular models most languages
+
+
+def download_tessdata(lang_code: str, dest_folder: str, retries: int = 3, delay: int = 5):
+    """
+    Downloads the traineddata file for the given language to dest_folder.
+    Retries a few times on network failure before giving up.
+    """
+    os.makedirs(dest_folder, exist_ok=True)
+
+    repo = LANG_REPO_MAP.get(lang_code, DEFAULT_REPO)
+    url = f"{TESSERACT_BASE.format(repo=repo)}{lang_code}.traineddata"
+    dest_path = os.path.join(dest_folder, f"{lang_code}.traineddata")
+
+    if os.path.exists(dest_path):
+        print(f"[+] {lang_code}.traineddata already exists at {dest_path}")
+        return dest_path
+
+    print(f"[~] Downloading {lang_code}.traineddata from {repo} ...")
+
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req) as response, open(dest_path, "wb") as out_file:
+                total_downloaded = 0
+                block_size = 8192
+                while chunk := response.read(block_size):
+                    out_file.write(chunk)
+                    total_downloaded += len(chunk)
+                    print(f"\rDownloading {lang_code}: {total_downloaded / 1024:.1f} KB", end="")
+            print(f"\n[+] Download complete: {dest_path}")
+            return dest_path
+
+        except urllib.error.HTTPError as e:
+            print(f"\n[!] HTTP Error {e.code} while downloading {lang_code}: {e.reason}")
+        except Exception as e:
+            print(f"\n[!] Attempt {attempt} failed for {lang_code}: {e}")
+
+        if attempt < retries:
+            print(f"[*] Retrying in {delay}s...")
+            time.sleep(delay)
+        else:
+            raise RuntimeError(f"[X] Failed to download {lang_code} after {retries} attempts.")
+
+    return None  # safety fallback
+
+
+def ensure_language_file(lang_code: str):
+    """
+    Ensures that the traineddata file for the specified language exists.
+    Downloads it if missing. Falls back to any available local copy on failure.
+    """
+    # Determine which tessdata folder to use
+    if os.path.exists(SOURCE_TESSDATA) and os.access(SOURCE_TESSDATA, os.W_OK):
+        tessdata_folder = SOURCE_TESSDATA
+    elif os.path.exists(EXE_TESSDATA) and os.access(EXE_TESSDATA, os.W_OK):
+        tessdata_folder = EXE_TESSDATA
+    else:
+        tessdata_folder = PERSISTENT_TESSDATA
+
+    os.makedirs(tessdata_folder, exist_ok=True)
+
+    lang_file = os.path.join(tessdata_folder, f"{get_ocr_language(lang_code)}.traineddata")
+    if not os.path.exists(lang_file):
+        log_message(f"[*] Language file {lang_file} not found. Attempting to download...")
+
+        try:
+            download_tessdata(get_ocr_language(lang_code), tessdata_folder)
+            log_message(f"[+] Successfully downloaded {lang_code}.traineddata")
+        except Exception as e:
+            log_message(f"[!] Network error while downloading {lang_code}: {e}")
+            log_message("[*] Falling back to existing local tessdata if available...")
+
+            # Try to find a fallback file in other known locations
+            for folder in [SOURCE_TESSDATA, EXE_TESSDATA, PERSISTENT_TESSDATA]:
+                fallback = os.path.join(folder, f"{get_ocr_language(lang_code)}.traineddata")
+                if os.path.exists(fallback):
+                    log_message(f"[~] Using existing file from {folder}")
+                    return fallback
+
+            log_message(f"[X] No fallback found for {lang_code}. OCR may fail.")
+    else:
+        log_message(f"[+] Language file already exists: {lang_file}")
+
+    return lang_file
+
+# =====================================================
+# ---------------- Tesseract Setup --------------------
+# =====================================================
+
+# Path where Tesseract executable is embedded
+TESSERACT_EXE = resource_path("Tesseract-OCR/tesseract.exe")
+
+def ensure_tesseract_installed(current_language):
+    global TESSERACT_PATH
+    TESSERACT_PATH = TESSERACT_EXE
+
+    if not os.path.exists(TESSERACT_PATH):
+        log_message(f"[!] Embedded Tesseract not found: {TESSERACT_PATH}")
+        sys.exit(1)
+
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+    log_message(f"[+] Using Tesseract: {TESSERACT_PATH}")
+
+    # Determine which tessdata folder to use
+    if os.path.exists(SOURCE_TESSDATA) and os.access(SOURCE_TESSDATA, os.W_OK):
+        TESSDATA_FOLDER = SOURCE_TESSDATA
+        log_message(f"[+] Using source tessdata folder: {TESSDATA_FOLDER}")
+    elif os.path.exists(EXE_TESSDATA) and os.access(EXE_TESSDATA, os.W_OK):
+        TESSDATA_FOLDER = EXE_TESSDATA
+        log_message(f"[+] Using EXE tessdata folder: {TESSDATA_FOLDER}")
+    else:
+        TESSDATA_FOLDER = PERSISTENT_TESSDATA
+        log_message(f"[!] Using persistent fallback tessdata folder: {TESSDATA_FOLDER}")
+
+    os.environ["TESSDATA_PREFIX"] = TESSDATA_FOLDER
+
+    lang_code = get_ocr_language(current_language)
+    lang_file = os.path.join(TESSDATA_FOLDER, f"{lang_code}.traineddata")
+    if not os.path.exists(lang_file):
+        log_message(f"[*] Downloading missing language file: {lang_code}.traineddata")
+        download_tessdata(lang_code, TESSDATA_FOLDER)
 
 # =====================================================
 # --------------- Verification Check ------------------
@@ -196,6 +390,22 @@ def ensure_config_values(cfg):
         cfg["DISCORD_CLIENT_ID"] = new_id
         log_message(f"[+] Discord Client ID saved: {new_id}")
 
+    # ---------------- Force HUD Option ----------------
+    hud_options = ("OG", "WR")
+    force_hud = cfg.get("force_hud", "OG").upper()  # default is OG
+
+    if force_hud not in hud_options:
+        needs_setup = True
+        prompt = "Force HUD? (OG / WR) [default: OG]: "
+        while True:
+            choice = input(prompt).strip().upper() or "OG"
+            if choice in hud_options:
+                cfg["force_hud"] = choice
+                break
+            print("Invalid choice. Please enter OG or WR.")
+    else:
+        cfg["force_hud"] = force_hud
+
     # ---------------- Current Language ----------------
     valid_langs = list(OCR_LANGUAGE_MAP.keys())
     curr_lang = str(cfg.get("current_language", "")).upper()
@@ -210,8 +420,13 @@ def ensure_config_values(cfg):
             break
         cfg["current_language"] = lang_input
         log_message(f"[+] Current language set to: {lang_input}")
+    else:
+        lang_input = curr_lang
 
-    # ---------------- Time / Verbose / Dynamic ----------------
+    # Download the language
+    ensure_language_file(lang_input)
+
+    # ---------------- Time/Verbose/Dynamic ----------------
     bool_fields = {
         "time_in_area": False,
         "verbose_logging": False,
@@ -225,7 +440,7 @@ def ensure_config_values(cfg):
             cfg[key] = response in ("yes", "y") if response not in ("default", "use default", "") else default
             log_message(f"[+] {key} set to: {cfg[key]}")
 
-    # ---------------- Discord Image / Text / Buttons ----------------
+    # ---------------- Discord Image/Text /Buttons ----------------
     discord_defaults = {
         "large_image": "embedded_cover",
         "large_text": "Once A 5-10, Always A 5-10",
@@ -254,7 +469,7 @@ def ensure_config_values(cfg):
     cfg["ocr_scale"] = cfg.get("ocr_scale", 4)
     cfg["ocr_region"] = tuple(cfg.get("ocr_region", (1655, 772, 208, 36)))
 
-    # ---------------- Save config & exit if setup was needed ----------------
+    # ---------------- Save config & exit ----------------
     if needs_setup:
         save_config(cfg)
         log_message("[+] config.json settings have been saved.")
@@ -278,6 +493,8 @@ current_language  = config.get("current_language", "EN").upper()
 exe_folder = os.path.dirname(sys.executable if getattr(sys, "frozen", False) else __file__)
 LANGUAGE_JSON = os.path.join(exe_folder, config.get("language_path", "Language"), f"{current_language}.json")
 ZONE_COORDS       = tuple(config.get("ocr_region", ZONE_COORDS))
+WR_ZONE_COORDS = tuple(config.get("wr_ocr_region", WR_ZONE_COORDS))
+HUD_TYPE          = config.get("force_hud", HUD_TYPE)
 TIME_IN_AREA      = config.get("time_in_area", TIME_IN_AREA)
 DYNAMIC_LARGE_IMAGE = config.get("dynamic_large_image", DYNAMIC_LARGE_IMAGE)
 VERBOSE_LOGGING   = config.get("verbose_logging", VERBOSE_LOGGING)
@@ -294,16 +511,19 @@ BUTTON2_LABEL = config.get("button2_label", "")
 BUTTON2_URL   = config.get("button2_url", "")
 
 ocr_lang = get_ocr_language(current_language)
+current_language = config.get("current_language", "EN").upper()
 
 # =====================================================
 # ---------------- OCR Capture Folder -----------------
 # =====================================================
+
 OCR_CAPTURE_FOLDER = os.path.join(exe_folder, "Capture")
 os.makedirs(OCR_CAPTURE_FOLDER, exist_ok=True)
 
 # =====================================================
 # ----------- Hotkey Functions + Logging --------------
 # =====================================================
+
 with open("TcuStatus.log", "w", encoding="utf-8") as f:
     f.write("")
 
@@ -329,41 +549,31 @@ def toggle_verbose():
     log_message(f"[+] Verbose logging {'enabled' if VERBOSE_LOGGING else 'disabled'}")
 
 # =====================================================
-# ---------------- Tesseract Setup --------------------
-# =====================================================
-def ensure_tesseract_installed():
-    global TESSERACT_PATH, TESSDATA_FALLBACK
-    TESSERACT_PATH = resource_path(os.path.join("Tesseract-OCR", "tesseract.exe"))
-    TESSDATA_FALLBACK = resource_path(os.path.join("Tesseract-OCR", "tessdata"))
-
-    if not os.path.exists(TESSERACT_PATH):
-        log_message(f"[!] Embedded Tesseract not found: {TESSERACT_PATH}")
-        sys.exit(1)
-
-    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
-    os.environ["TESSDATA_PREFIX"] = TESSDATA_FALLBACK
-    log_message(f"[+] Using embedded Tesseract: {TESSERACT_PATH}")
-
-ensure_tesseract_installed()
-
-# =====================================================
 # ---------------- Startup Message --------------------
 # =====================================================
-print("""
-Welcome To A Simple TCU Status Presence Maker!
 
-Press 1 To Toggle Time Spent In Current Area
-Press 2 To Toggle Reactive Images
-Press 3 To Toggle Verbose Logging (Debug)
-Press 4 To Reload The Language Files (Debug)
-Press 5 To Redefine OCR Region Dynamically
-Press 6 To Screenshot Current OCR Region
-Press 7 To Exit The Bot
+print("""
+=== Welcome to the Simple TCU Status Presence Maker! ===
+
+Use the following keyboard shortcuts (Alt + NUM):
+
+  1 → Toggle Time Spent in Current Area
+  2 → Toggle Reactive Images
+  3 → Toggle Verbose Logging (Debug)
+  4 → Reload Language Files (Debug)
+  5 → Redefine WR OCR Region Dynamically
+  6 → Redefine OG OCR Region Dynamically
+  7 → Screenshot Current OCR Region
+  8 → Swap the HUD if Needed
+  9 → Exit the Bot
 """)
+
+ensure_tesseract_installed(current_language)
 
 # =====================================================
 # ---------------- Language Loading -------------------
 # =====================================================
+
 def load_language_file():
     """
     Loads all subs, main image overrides, and transition overrides from the language JSON.
@@ -416,9 +626,7 @@ def reload_language_file_hotkey():
     global all_sub_areas_list, sub_areas_map, transition_overrides
     global sub_to_mains_list, main_buffer, current_main, current_sub, previous_main_context
     all_sub_areas_list, sub_areas_map, transition_overrides = load_language_file()
-    sub_to_mains_list.clear()
-    for sub_upper, mains in sub_areas_map.items():
-        sub_to_mains_list.setdefault(sub_upper, []).extend(mains)
+    sub_to_mains_list = {sub_upper: list(mains) for sub_upper, mains in sub_areas_map.items()}
     main_buffer = current_main = current_sub = previous_main_context = None
 
 def reload_language_file_hotkey_safe():
@@ -433,8 +641,18 @@ def reload_language_file_hotkey_safe():
 # =====================================================
 # ---------------- Discord Presence -------------------
 # =====================================================
+
 rpc = Presence(DISCORD_CLIENT_ID)
-rpc.connect()
+
+try:
+    rpc.connect()
+    discord_connected = True
+except Exception as e:
+    log_message(f"[!] Discord is not running or RPC connection failed: {e}")
+    print("\n[!] Discord must be running to use this bot. Exiting...")
+    time.sleep(3)
+    sys.exit(1)
+
 start_time = int(time.time())
 
 def update_discord_status(main_area, sub_area):
@@ -471,6 +689,7 @@ def update_discord_status(main_area, sub_area):
 # =====================================================
 # ---------------- OCR Matching Helper ----------------
 # =====================================================
+
 def clean_ocr_text(text):
     if not text: 
         return ""
@@ -526,29 +745,83 @@ def match_area_hybrid(ocr_text, possible_areas, fallback="Unknown Location"):
     return fallback
 
 # =====================================================
+# --------- Additional OCR Regions & Helpers ----------
+# =====================================================
+
+# Add a second OCR region for vanilla HUD (tiny white text)
+VANILLA_HUD_COORDS = (1600, 950, 240, 24)  # adjust as needed
+OCR_REGIONS = [ZONE_COORDS, VANILLA_HUD_COORDS]
+
+def read_text_from_regions(regions, lang, samples=3, delay=0.05, stable_threshold=2):
+    """
+    Attempts OCR on multiple regions and returns the most stable result.
+    Stops early if text stabilizes across samples.
+    
+    stable_threshold: number of times the same text must appear to be considered stable
+    """
+    texts = []
+    used_region = None
+
+    for _ in range(samples):
+        for region in regions:
+            img = pyautogui.screenshot(region=region)
+            processed = preprocess_zone_image(img)
+
+            # Try PSM 7 first
+            text = pytesseract.image_to_string(processed, lang=lang, config="--psm 7")
+            text = clean_ocr_text(text)
+
+            # Try PSM 8 if nothing is found
+            if not text.strip():
+                text = pytesseract.image_to_string(processed, lang=lang, config="--psm 8")
+                text = clean_ocr_text(text)
+
+            if text.strip():
+                texts.append(text)
+                used_region = region
+                break
+
+        if texts:
+            most_common_text, count = Counter(texts).most_common(1)[0]
+            if count >= stable_threshold:
+                return most_common_text, used_region
+
+        time.sleep(delay)
+
+    if not texts:
+        return "", None
+
+    # Fallback to most common text across all collected samples
+    most_common_text = Counter(texts).most_common(1)[0][0]
+    return most_common_text, used_region
+
+# =====================================================
 # ---------------- OCR + Main Loop --------------------
 # =====================================================
+
 def main_loop():
-    global current_main, current_sub, main_buffer, last_confirmed_sub, start_time
+    global current_main, current_sub, main_buffer, last_confirmed_sub
+    global start_time, current_active_region
+
+    # Initialize active HUD region at start
+    current_active_region = ZONE_COORDS if config.get("force_hud", "OG") == "OG" else WR_ZONE_COORDS
+
     while running:
         try:
             if pause_ocr:
                 time.sleep(0.2)
                 continue
 
-            # Capture the OCR region
-            zone_img = pyautogui.screenshot(region=ZONE_COORDS)
-            ocr_raw = pytesseract.image_to_string(
-                preprocess_zone_image(zone_img), lang=ocr_lang, config="--psm 7"
-            )
+            # Always OCR current active region
+            ocr_raw, _ = read_text_from_regions([current_active_region], ocr_lang)
             ocr_clean = clean_ocr_text(ocr_raw)
 
-            # Match sub-area using the hybrid matcher
+            # Match sub-area using hybrid matcher
             matched_sub = match_area_hybrid(ocr_clean, all_sub_areas_list, fallback="Unknown Location")
             possible_mains = sub_to_mains_list.get(matched_sub.upper(), [])
             matched_main = "Unknown Main Area"
 
-            # Determine main area based on the buffer
+            # Determine main area based on buffer
             if len(possible_mains) == 1:
                 matched_main = main_buffer = possible_mains[0]
             elif len(possible_mains) > 1 and main_buffer in possible_mains:
@@ -558,49 +831,42 @@ def main_loop():
             if last_confirmed_sub:
                 def _norm_key(s: str) -> str:
                     return re.sub(r'\s+', '', (s or "")).upper()
-
                 last_norm = _norm_key(last_confirmed_sub)
                 matched_norm = _norm_key(matched_sub)
-
                 for trans in transition_overrides:
                     from_sub = (trans.get("from") or "").strip()
                     to_sub   = (trans.get("to")   or "").strip()
                     main_override = (trans.get("main") or "").strip()
                     if not from_sub or not to_sub or not main_override:
                         continue
-
                     if last_norm == _norm_key(from_sub) and matched_norm == _norm_key(to_sub):
                         matched_main = main_override
                         main_buffer = matched_main
                         log_message(f"[!] Transition override applied: {from_sub} → {to_sub} → Main: {main_override}")
                         break
 
-            # Only update last_confirmed_sub is valid
+            # Only update last_confirmed_sub if valid
             if matched_sub != "Unknown Location":
                 last_confirmed_sub = matched_sub
 
             is_fallback = matched_sub == "Unknown Location" or matched_main == "Unknown Main Area"
 
             if VERBOSE_LOGGING:
-                log_message(f"[VERBOSE] OCR Zone: '{ocr_clean}' | Sub: '{matched_sub}' | Main: '{matched_main}' | Fallback: {is_fallback}")
+                hud_type = "OG HUD" if current_active_region == ZONE_COORDS else "WR HUD"
+                log_message(f"[VERBOSE] OCR Zone ({hud_type}): '{ocr_clean}' | Sub: '{matched_sub}' | Main: '{matched_main}' | Fallback: {is_fallback}")
 
-            # Determine final values for comparison check
+            # Determine final values
             final_sub = matched_sub if matched_sub != "Unknown Location" else current_sub
             final_main = matched_main if matched_main != "Unknown Main Area" else current_main
-
-            # Only update Discord if the location actually changed
             location_changed = (final_sub != current_sub) or (final_main != current_main)
 
             if location_changed:
-                # Reset TIME_IN_AREA timer only if we have a valid change
                 if TIME_IN_AREA and not is_fallback:
                     start_time = int(time.time())
 
-                # SMART_FALLBACK handling
                 if SMART_FALLBACK and is_fallback:
                     if VERBOSE_LOGGING:
                         log_message(f"[!] SMART_FALLBACK ignored fallback OCR: (Sub='{final_sub}', Main='{final_main}')")
-
                 else:
                     log_message(f"OCR Zone: '{ocr_clean}' | Sub: '{final_sub}' | Main: '{final_main}'")
                     try:
@@ -609,7 +875,6 @@ def main_loop():
                     except Exception as e:
                         log_message(f"[!] Failed to update Discord: {e}")
 
-                    # Update the current location after a successful update
                     current_main, current_sub = final_main, final_sub
 
             time.sleep(UPDATE_INTERVAL)
@@ -617,34 +882,41 @@ def main_loop():
         except Exception as e:
             if running:
                 log_message(f"[!] Error in main loop: {e}")
-            else:
-                break
             time.sleep(UPDATE_INTERVAL)
 
 # =====================================================
 # --------------- Save Capture & Exit -----------------
 # =====================================================
-def save_capture():
-    """Captures the current OCR region and saves both raw and processed images."""
+
+def save_capture(region=None):
+    global current_active_region
+
     try:
-        x, y, w, h = map(int, ZONE_COORDS)
+        # Use current active region if none specified
+        if region is None:
+            region = current_active_region or ZONE_COORDS
+
+        # Ensure all coordinates are integers and region is 4-tuple (x, y, w, h)
+        if len(region) != 4:
+            raise ValueError(f"Invalid OCR region length: {region}")
+        region = tuple(int(x) for x in region)
+        x, y, w, h = region
+
         zone_capture = pyautogui.screenshot(region=(x, y, w, h))
         timestamp = datetime.now().strftime("%Y-%m-%d %Hh %Mm %Ss")
 
-        # Raw screenshot
         raw_path = os.path.join(OCR_CAPTURE_FOLDER, f"OCRZone_{timestamp}_raw.png")
-        zone_capture.save(raw_path)
-
-        # Processed screenshot
         processed_path = os.path.join(OCR_CAPTURE_FOLDER, f"OCRZone_{timestamp}_processed.png")
+
+        zone_capture.save(raw_path)
         preprocess_zone_image(zone_capture).save(processed_path)
 
-        log_message(f"[+] Saved OCR capture at {timestamp}")
+        log_message(f"[+] Saved OCR capture at {timestamp} (Region: {region})")
+
     except Exception as e:
         log_message(f"[!] save_capture() failed: {e}")
 
-# Exiting after reloading the bot due to invalid/missing DISCORD_CLIENT_ID is buggy.
-# If running via the .py it will captue all keypresses due to how it works.
+# If running via the .py it will captue all keypresses into the terminal due to how it works.
 def exit_bot():
     """Gracefully exit the bot."""
     global running
@@ -652,38 +924,81 @@ def exit_bot():
     log_message("[!] Exiting Bot Safely...")
     os._exit(0)
 
-# Hotkeys
-keyboard.add_hotkey("1", toggle_timeinarea, suppress=True)
-keyboard.add_hotkey("2", toggle_dynamic_large_image, suppress=True)
-keyboard.add_hotkey("3", toggle_verbose, suppress=True)
-keyboard.add_hotkey("4", reload_language_file_hotkey_safe, suppress=True)
-keyboard.add_hotkey("5", lambda: threading.Thread(target=define_ocr_region_overlay, daemon=False).start(), suppress=True)
-keyboard.add_hotkey("6", save_capture, suppress=True)
-keyboard.add_hotkey("7", exit_bot, suppress=True)
+# =====================================================
+# ---------------- Hotkeys -----------------
+# =====================================================
+
+# Wrapper to make sure no other weird keys are picked up
+def alt_number_keypress(callback, expected_name):
+    """Trigger callback only for top-row number keys (ignore numpad)."""
+    def wrapper(event):
+        if (event.name == expected_name
+            and not event.is_keypad
+            and keyboard.is_pressed("alt")  # check if Alt is held down
+        ):
+            callback()
+    return wrapper
+
+def toggle_hud_region():
+    current = config.get("force_hud")
+    if current == "OG":
+        new = "WR"
+    else:
+        new = "OG"
+    config["force_hud"] = new
+    save_config(config)
+    
+    global current_active_region
+    current_active_region = ZONE_COORDS if new == "OG" else WR_ZONE_COORDS
+
+    log_message(f"[+] force_hud: {new}")
+
+# Map top-row keys to their callbacks
+key_map = {
+    "1": toggle_timeinarea,
+    "2": toggle_dynamic_large_image,
+    "3": toggle_verbose,
+    "4": reload_language_file_hotkey_safe,
+    "5": lambda: start_overlay_thread(for_wr=True),
+    "6": lambda: start_overlay_thread(for_wr=False),
+    "7": lambda: save_capture(region=current_active_region),
+    "8": toggle_hud_region,
+    "9": exit_bot
+}
+
+# Register all top-row keys
+for key, callback in key_map.items():
+    keyboard.on_press(alt_number_keypress(callback, key))
 
 # =====================================================
 # ---------------- OCR Region Overlay -----------------
 # =====================================================
-def define_ocr_region_overlay():
-    global ZONE_COORDS, overlay_enabled, pause_ocr
+
+def define_ocr_region_overlay(for_wr: bool = False):
+    """
+    Opens a fullscreen semi-transparent overlay to select an OCR region.
+    """
+    global ZONE_COORDS, WR_ZONE_COORDS, overlay_enabled, pause_ocr
     if overlay_enabled:
         log_message("[!] OCR Overlay already open.")
         return
 
     overlay_enabled = True
     pause_ocr = True
-    log_message("[!] OCR Region Redefinition Overlay Started (5)")
+    overlay_type = "WR/Vanilla HUD" if for_wr else "OG HUD"
+    log_message(f"[!] OCR Region Redefinition Overlay Started ({overlay_type})")
+
 
     root = tk.Tk()
     root.attributes("-topmost", True)
     root.attributes("-alpha", 0.3)
     root.attributes("-fullscreen", True)
     root.configure(bg="black")
-    root.title("Select OCR Region")
+    root.title(f"Select OCR Region ({overlay_type})")
 
     start_x = start_y = end_x = end_y = 0
     rect_id = None
-    region_selected = False  
+    region_selected = False
 
     canvas = tk.Canvas(root, bg="black")
     canvas.pack(fill=tk.BOTH, expand=True)
@@ -702,32 +1017,29 @@ def define_ocr_region_overlay():
         rect_id = canvas.create_rectangle(start_x, start_y, event.x, event.y, outline="red", width=2)
 
     def on_mouse_up(event):
-        nonlocal start_x, start_y, end_x, end_y, region_selected
+        nonlocal start_x, start_y, end_x, end_y, rect_id, region_selected
+        global ZONE_COORDS, WR_ZONE_COORDS
+
         end_x, end_y = event.x, event.y
         x1, y1 = min(start_x, end_x), min(start_y, end_y)
         x2, y2 = max(start_x, end_x), max(start_y, end_y)
         w, h = x2 - x1, y2 - y1
+
         if w > 0 and h > 0:
             region_selected = True
             new_coords = (x1, y1, w, h)
-            ZONE_COORDS = new_coords
-            config["ocr_region"] = list(new_coords)
-            save_config(config)
-            log_message(f"[!] OCR Region Updated To {new_coords}")
-        root.quit()  # stop mainloop safely
 
-    def close_overlay():
-        global overlay_enabled, pause_ocr
-        overlay_enabled = False
-        pause_ocr = False
-        try:
-            root.destroy()
-        except Exception:
-            pass
-        if not region_selected:
-            log_message("[!] OCR Region Overlay Closed (no changes saved)")
-        else:
-            log_message("[!] OCR Region Overlay Closed")
+            if for_wr:
+                WR_ZONE_COORDS = new_coords
+                config["wr_ocr_region"] = list(new_coords)
+            else:
+                ZONE_COORDS = new_coords
+                config["ocr_region"] = list(new_coords)
+
+            save_config(config)
+            log_message(f"[!] OCR Region ({overlay_type}) Updated To {new_coords}")
+
+        root.after(10, root.destroy)
 
     canvas.bind("<ButtonPress-1>", on_mouse_down)
     canvas.bind("<B1-Motion>", on_mouse_drag)
@@ -736,11 +1048,30 @@ def define_ocr_region_overlay():
     try:
         root.mainloop()
     finally:
-        close_overlay()
+        overlay_enabled = False
+        pause_ocr = False
+        if not region_selected:
+            log_message(f"[!] OCR Region Overlay ({overlay_type}) Closed (no changes saved)")
+        else:
+            log_message(f"[!] OCR Region Overlay ({overlay_type}) Closed")
+
+def start_overlay_thread(for_wr: bool):
+    """
+    Starts the OCR overlay in a thread with safety:
+    - Non-daemon thread (waits to finish normally)
+    - But uses a timeout join in exit logic to avoid blocking
+    """
+    t = threading.Thread(
+        target=lambda: define_ocr_region_overlay(for_wr=for_wr),
+        daemon=False
+    )
+    t.start()
+    return t
 
 # =====================================================
 # ---------------- Start Bot --------------------------
 # =====================================================
+
 all_sub_areas_list, sub_areas_map, transition_overrides = load_language_file()
 for sub_upper, mains in sub_areas_map.items():
     sub_to_mains_list.setdefault(sub_upper, []).extend(mains)
