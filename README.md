@@ -3,7 +3,7 @@
 > ⚠️ **Important:**<br>
 > - This program does **not** interact with the game directly. It reads your screen to determine your location.<br>
 > - **The script doesn't require the original HUD to function, but is recomended**<br>
-> **If Running WR UI its recomended to run Xenias "[`Vanilla HUD - Always visible current area`](https://modworkshop.net/mod/54037)"**
+> - **If Running WR UI its recomended to run Xenias "[`Vanilla HUD - Always visible current area`](https://modworkshop.net/mod/54037)"**
 > - **ONLY THE CURRENT LANGUAGES ARE SUPPORTED**: EN, PL, RU<br>
 > - Borderless window recommended. A User guide is provided for more information under `main`<br>
 > - For fullscreen, **ENSURE** native resolution is selected. Set the ocr region in borderless window, and set back to fullscreen.
