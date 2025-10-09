@@ -1,7 +1,7 @@
 # TCU Status Presence Maker – User Guide
 
 ⚠️ **IMPORTANT:** You need to create your own Discord bot and enter its details in the `config.json` file before running this program.  
-**NOTE:** The script requires the OG HUD to function — it will not work otherwise.
+**NOTE:** The script doesn't require the OG HUD to function, but is recomended.
 
 ---
 
