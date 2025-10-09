@@ -61,7 +61,7 @@ Before running the program, you need to create your **own Discord application** 
 
 By default, **TCU Status** downloads the required Tesseract OCR models into a **temporary embedded folder** each time it runs. This keeps the program lightweight — but the downloaded files are deleted when you close the bot.
 
-If you’d like to **keep the OCR data permanently** (to avoid redownloading or work offline), you can set up a persistent folder. To do this, copy the `Tesseract-OCR` folder from the **source** and place it next to the executable.  
+If you’d like to **keep the OCR data permanently** (to avoid redownloading), you can set up a persistent folder. To do this, copy the `Tesseract-OCR` folder from the **source** and place it next to the executable.  
 
 Your directory should look like this:
 
