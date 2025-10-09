@@ -57,23 +57,6 @@ Before running the program, you need to create your **own Discord application** 
 1. Put in the information into the `config.json`.  
 2. Use the setup provided by the terminal on first setup (**_or if one is missing or invalid_**) to set what you want to use without having to touch the `config.json`. the only thing you cannot set maually during this process is OCR cordinates, and the update interval.
 
-### Step 3: Optional: Persistent OCR Models (Tesseract):
-
-By default, **TCU Status** downloads the required Tesseract OCR models into a **temporary embedded folder** each time it runs. This keeps the program lightweight — but the downloaded files are deleted when you close the bot.
-
-If you’d like to **keep the OCR data permanently** (to avoid redownloading), you can set up a persistent folder. To do this, copy the `Tesseract-OCR` folder from the **source** and place it next to the executable.  
-
-Your directory should look like this:
-
-📂 TCU_Bot/<br>
-├── TCU_Bot.exe<br>
-├── 📁 Tesseract-OCR/<br>
-│ ├── tesseract.exe<br>
-│ ├── (all required dll's)<br>
-│ └── 📁 tessdata/<br>
-│ ├── eng.traineddata<br>
-│ └── . . . 
-
 ---
 
 ### Option 1: Run the Executable
@@ -120,15 +103,15 @@ pyinstaller TcuStatus.spec
 ### Hotkeys
 Some settings can also be toggled in real-time using Number-keys (pressing the key while the terminal is focused is recomended):
 
-- **1** – Toggle "Time Spent in Current Area" (`time_in_area`).  
-- **2** – Toggle dynamic large images (`dynamic_large_image`).  
-- **3** – Toggle verbose logging (`verbose_logging`).  
-- **4** – Reload language files for OCR (debug).  
-- **5** – Redefine `WR` OCR Region Dynamically 
-- **6** – Redefine `OG` OCR Region Dynamically 
-- **7** – Screenshot Current Chosen OCR Region
-- **8** – Swap Between Capture Zones (`Wr`;`OG`)  
-- **9** – Exit the bot.
+- **`Alt+1`** – Toggle "Time Spent in Current Area" (`time_in_area`).  
+- **`Alt+2`** – Toggle dynamic large images (`dynamic_large_image`).  
+- **`Alt+3`** – Toggle verbose logging (`verbose_logging`).  
+- **`Alt+4`** – Reload language files for OCR (debug).  
+- **`Alt+5`** – Redefine `WR` OCR Region Dynamically 
+- **`Alt+6`** – Redefine `OG` OCR Region Dynamically 
+- **`Alt+7`** – Screenshot Current Chosen OCR Region
+- **`Alt+8`** – Swap Between Capture Zones (`Wr`;`OG`)  
+- **`Alt+9`** – Exit the bot.
 
 ---
 
@@ -179,10 +162,9 @@ The program uses a `config.json` file to control settings. You can adjust the fo
 
 ## Notes
 - Focusing on the terminal is recomended before using hotkeys but is not required.
-- OCR relies on your screen resolution and map location; use **5** to redefine the OCR if needed.
+- OCR relies on your screen resolution and map location; use **`5`** or **`6`** to redefine the OCR if needed.
 - When screenshotting the OCR region, make sure to **ONLY** include the sub region.
-- Only necessary tessdata files for selected languages are included to reduce size.
-- You can also compile your own version of the bot using a custom Tesseract-OCR folder if desired.
+- Tessdata files are downloaded at runtime to reduce file size.
 - Make sure `config.json` and Language/ folder are in the same directory as the executable
 - If running from source, also make sure the `Tesseract-OCR` folder is in the same directory
 - If you run into an issue, open a request
