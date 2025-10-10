@@ -2,7 +2,7 @@
 import os
 from PyInstaller.utils.hooks import collect_submodules
 
-# ---------------- Collect Tesseract-OCR files (exclude tessdata) ----------------
+# Collect Tesseract-OCR files (exclude tessdata)
 tess_exe_folder = 'Tesseract-OCR'
 datas_to_include = []
 
@@ -16,7 +16,7 @@ for root, dirs, files in os.walk(tess_exe_folder):
         target_path = os.path.join('Tesseract-OCR', relative_path)
         datas_to_include.append((full_path, target_path))
 
-# ---------------- Hidden imports ----------------
+# Hidden imports
 hidden_imports = [
     '_overlapped',
     'asyncio.windows_events',
@@ -24,7 +24,7 @@ hidden_imports = [
     '_tkinter',
 ]
 
-# ---------------- Analysis ----------------
+# Analysis
 a = Analysis(
     ['TcuStatus.py'],
     pathex=[],
